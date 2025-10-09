@@ -8,7 +8,7 @@ export async function uploadProfileImage(userId: string, file: File) {
   // Create a unique file name
   const fileExt = file.name.split(".").pop()
   const fileName = `${userId}-${Date.now()}.${fileExt}`
-  const filePath = `profiles/${fileName}`
+  const filePath = `${userId}/${fileName}`
 
   // Convert File to ArrayBuffer then to Buffer
   const arrayBuffer = await file.arrayBuffer()
@@ -41,6 +41,16 @@ export async function deleteProfileImage(imageUrl: string) {
   if (urlParts.length < 2) return
 
   const filePath = urlParts[1]
+
+  // Handle both old format (profiles/filename) and new format (userId/filename)
+  // The RLS policy expects userId/filename format, so we need to handle backward compatibility
+  const pathSegments = filePath.split('/')
+  if (pathSegments.length === 2 && pathSegments[0] === 'profiles') {
+    // Old format: profiles/filename - we can't delete this as we don't have userId
+    // This is a limitation of the old format, but it won't break anything
+    console.warn("[v0] Cannot delete image with old path format:", filePath)
+    return
+  }
 
   const { error } = await supabase.storage.from("profile-images").remove([filePath])
 

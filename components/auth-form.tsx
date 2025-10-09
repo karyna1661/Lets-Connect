@@ -46,24 +46,35 @@ export function AuthForm() {
         window.location.reload()
       }
     } catch (error: any) {
-      setMessage(error.message || "An error occurred")
+      const errorMessage = error.message || "An error occurred"
+      if (errorMessage.includes("Invalid login credentials")) {
+        setMessage("Invalid email or password. Please check your credentials.")
+      } else if (errorMessage.includes("User already registered")) {
+        setMessage("An account with this email already exists. Please sign in instead.")
+      } else if (errorMessage.includes("Password should be at least")) {
+        setMessage("Password must be at least 6 characters long.")
+      } else if (errorMessage.includes("Invalid email")) {
+        setMessage("Please enter a valid email address.")
+      } else {
+        setMessage(errorMessage)
+      }
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-white border-2 border-black">
+    <Card className="w-full max-w-sm sm:max-w-md mx-auto bg-white border-2 border-black">
       <CardHeader className="border-b-2 border-black">
-        <CardTitle className="text-2xl font-bold">{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
-        <CardDescription className="text-gray-600">
+        <CardTitle className="text-xl sm:text-2xl font-bold">{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
+        <CardDescription className="text-gray-600 text-sm sm:text-base">
           {isSignUp ? "Sign up to start networking with QR codes" : "Sign in to access your profile"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-6">
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+      <CardContent className="pt-4 sm:pt-6">
+        <form onSubmit={handleAuth} className="space-y-3 sm:space-y-4">
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
             <Input
               id="email"
               type="email"
@@ -71,11 +82,11 @@ export function AuthForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="border-2 border-black"
+              className="border-2 border-black text-sm sm:text-base"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1 sm:space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
             <Input
               id="password"
               type="password"
@@ -84,12 +95,12 @@ export function AuthForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="border-2 border-black"
+              className="border-2 border-black text-sm sm:text-base"
             />
           </div>
           {message && (
             <p
-              className={`text-sm ${message.includes("error") || message.includes("Invalid") ? "text-red-600" : "text-green-600"}`}
+              className={`text-xs sm:text-sm ${message.includes("error") || message.includes("Invalid") ? "text-red-600" : "text-green-600"}`}
             >
               {message}
             </p>
@@ -97,7 +108,7 @@ export function AuthForm() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white hover:bg-gray-800 border-2 border-black"
+            className="w-full bg-black text-white hover:bg-gray-800 border-2 border-black text-sm sm:text-base transition-all duration-200 active:scale-95"
           >
             {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
           </Button>
@@ -105,7 +116,7 @@ export function AuthForm() {
             type="button"
             variant="ghost"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full border-2 border-black hover:bg-gray-100"
+            className="w-full border-2 border-black hover:bg-gray-100 text-sm sm:text-base transition-all duration-200"
           >
             {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
           </Button>

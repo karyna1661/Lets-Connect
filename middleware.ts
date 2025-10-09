@@ -8,9 +8,27 @@ export async function middleware(request: NextRequest) {
     },
   })
 
+  // Validate environment variables
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('❌ Missing Supabase environment variables:')
+    console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓ Present' : '✗ Missing')
+    console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓ Present' : '✗ Missing')
+    console.error('\nPlease check:')
+    console.error('1. .env.local file exists in the root directory')
+    console.error('2. File is encoded in UTF-8 (not UTF-16)')
+    console.error('3. No extra spaces or special characters')
+    console.error('4. Development server was restarted after creating .env.local')
+    
+    // Return response without Supabase client to prevent crash
+    return response
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {

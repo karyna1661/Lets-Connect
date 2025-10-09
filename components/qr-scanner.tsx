@@ -42,10 +42,27 @@ export function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
         },
         (errorMessage) => {
           // Ignore scanning errors (they happen continuously while scanning)
+          // Only show errors for significant issues
+          if (errorMessage.includes("No MultiFormat Readers")) {
+            setError("Camera not supported. Please try a different device.")
+          }
         },
       )
     } catch (err: any) {
-      const errorMsg = err.message || "Failed to start camera"
+      let errorMsg = "Failed to start camera"
+      
+      if (err.message.includes("Permission denied")) {
+        errorMsg = "Camera permission denied. Please allow camera access and try again."
+      } else if (err.message.includes("NotAllowedError")) {
+        errorMsg = "Camera access blocked. Please enable camera permissions in your browser."
+      } else if (err.message.includes("NotFoundError")) {
+        errorMsg = "No camera found. Please connect a camera and try again."
+      } else if (err.message.includes("NotSupportedError")) {
+        errorMsg = "Camera not supported on this device."
+      } else if (err.message) {
+        errorMsg = err.message
+      }
+      
       setError(errorMsg)
       if (onScanError) onScanError(errorMsg)
       setIsScanning(false)
@@ -73,26 +90,26 @@ export function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
   }, [])
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div id={scannerDivId} className="rounded-2xl overflow-hidden border-2 border-white" />
+    <div className="w-full max-w-sm sm:max-w-md mx-auto">
+      <div id={scannerDivId} className="rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white w-full" />
 
       {error && (
-        <div className="mt-4 p-4 bg-red-100 border-2 border-red-600 rounded-xl">
-          <p className="text-red-600 text-sm font-medium">{error}</p>
+        <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-100 border-2 border-red-600 rounded-lg sm:rounded-xl">
+          <p className="text-red-600 text-xs sm:text-sm font-medium">{error}</p>
         </div>
       )}
 
       {!isScanning ? (
         <button
           onClick={startScanning}
-          className="w-full mt-4 bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-200 transition-colors border-2 border-white"
+          className="w-full mt-3 sm:mt-4 bg-white text-black px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-gray-200 transition-all duration-200 border-2 border-white active:scale-95"
         >
           Start Camera
         </button>
       ) : (
         <button
           onClick={stopScanning}
-          className="w-full mt-4 bg-red-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-red-700 transition-colors border-2 border-white"
+          className="w-full mt-3 sm:mt-4 bg-red-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-red-700 transition-all duration-200 border-2 border-white active:scale-95"
         >
           Stop Scanning
         </button>
