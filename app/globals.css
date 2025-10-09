@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,7 +119,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* Add smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Prevent horizontal overflow */
+    overflow-x: hidden;
   }
 }

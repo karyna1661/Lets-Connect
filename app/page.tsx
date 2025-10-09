@@ -20,7 +20,6 @@ import {
   Save,
   StickyNote,
   AlertCircle,
-  CheckCircle,
 } from "lucide-react"
 import { getProfile, upsertProfile } from "./actions/profile"
 import { getConnections, addConnection, deleteConnection, updateConnectionNotes } from "./actions/connections"
@@ -72,6 +71,7 @@ export default function LetsConnect() {
     email: "",
     profile_image: "",
   })
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [connections, setConnections] = useState<Connection[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
@@ -170,6 +170,7 @@ export default function LetsConnect() {
       setIsSavingProfile(true)
       setProfile(newProfile)
       await upsertProfile(newProfile)
+      setEditingProfile(null)
       toast.success("Profile saved successfully")
     } catch (error) {
       console.error("[v0] Error saving profile:", error)
@@ -397,22 +398,44 @@ export default function LetsConnect() {
   }
 
   if (view === "profile") {
+    const currentProfile = editingProfile || profile
+
     return (
       <div className="min-h-screen bg-white p-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-bold text-black">Your Profile</h2>
-            <button onClick={() => setView("home")} className="p-2 hover:bg-gray-200 rounded-full">
-              <X className="w-6 h-6" />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setEditingProfile(null)
+                  setView("home")
+                }}
+                className="px-4 py-2 border-2 border-gray-300 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => saveProfile(currentProfile)}
+                disabled={isSavingProfile}
+                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50"
+              >
+                <Save className="w-5 h-5" />
+                {isSavingProfile ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
             <ProfilePhotoUpload
               userId={user.id}
-              currentImageUrl={profile.profile_image}
-              userName={profile.name}
-              onUploadSuccess={(imageUrl) => saveProfile({ ...profile, profile_image: imageUrl })}
+              currentImageUrl={currentProfile.profile_image}
+              userName={currentProfile.name}
+              onUploadSuccess={(imageUrl) => {
+                const updatedProfile = { ...currentProfile, profile_image: imageUrl }
+                setEditingProfile(updatedProfile)
+                saveProfile(updatedProfile)
+              }}
             />
           </div>
 
@@ -423,8 +446,13 @@ export default function LetsConnect() {
               </label>
               <input
                 type="text"
-                value={profile.name}
-                onChange={(e) => saveProfile({ ...profile, name: e.target.value })}
+                value={currentProfile.name}
+                onChange={(e) =>
+                  setEditingProfile({
+                    ...(editingProfile || profile),
+                    name: e.target.value,
+                  })
+                }
                 placeholder="Your full name"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
               />
@@ -433,19 +461,17 @@ export default function LetsConnect() {
             <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-900 mb-2">Bio</label>
               <textarea
-                value={profile.bio || ""}
-                onChange={(e) => saveProfile({ ...profile, bio: e.target.value })}
+                value={currentProfile.bio || ""}
+                onChange={(e) =>
+                  setEditingProfile({
+                    ...(editingProfile || profile),
+                    bio: e.target.value,
+                  })
+                }
                 placeholder="Tell people about yourself..."
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black h-24"
               />
             </div>
-
-            {isSavingProfile && (
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle className="w-4 h-4" />
-                <span>Saving...</span>
-              </div>
-            )}
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-black">
@@ -454,17 +480,17 @@ export default function LetsConnect() {
             <div className="space-y-3">
               {availableSocials.map((social) => {
                 const Icon = SocialIcons[social.key]
-                const hasValue = profile[social.key as keyof Profile]
+                const hasValue = currentProfile[social.key as keyof Profile]
 
                 return (
                   <div key={social.key} className="flex items-center gap-3">
                     <Icon className={`w-6 h-6 ${hasValue ? "text-black" : "text-gray-400"}`} />
                     <input
                       type="text"
-                      value={(profile[social.key as keyof Profile] as string) || ""}
+                      value={(currentProfile[social.key as keyof Profile] as string) || ""}
                       onChange={(e) =>
-                        saveProfile({
-                          ...profile,
+                        setEditingProfile({
+                          ...(editingProfile || profile),
                           [social.key]: e.target.value,
                         })
                       }
