@@ -9,15 +9,9 @@ export interface Profile {
   linkedin?: string
   twitter?: string
   instagram?: string
-  github?: string
-  facebook?: string
-  youtube?: string
-  website?: string
-  farcaster?: string
   bio?: string
   profile_image?: string
   qr_code?: string
-  social_visibility?: Record<string, boolean>
   created_at?: string
   updated_at?: string
 }

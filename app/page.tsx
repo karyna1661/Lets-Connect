@@ -31,10 +31,9 @@ import { QRCodeDisplay } from "@/components/qr-code-display"
 import { QRScanner } from "@/components/qr-scanner"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 
-const SocialIcons: Record<string, React.ComponentType<any>> = {
+const SocialIcons = {
   instagram: Instagram,
   linkedin: Linkedin,
   twitter: Twitter,
@@ -46,8 +45,8 @@ const SocialIcons: Record<string, React.ComponentType<any>> = {
   farcaster: User,
 }
 
-const getSocialUrl = (platform: string, username: string) => {
-  const urls: Record<string, string> = {
+const getSocialUrl = (platform, username) => {
+  const urls = {
     instagram: `https://instagram.com/${username.replace("@", "")}`,
     twitter: `https://twitter.com/${username.replace("@", "")}`,
     linkedin: username.startsWith("http") ? username : `https://${username}`,
@@ -70,15 +69,8 @@ export default function LetsConnect() {
     linkedin: "",
     twitter: "",
     instagram: "",
-    github: "",
-    facebook: "",
-    youtube: "",
-    website: "",
-    farcaster: "",
-    phone: "",
     email: "",
     profile_image: "",
-    social_visibility: {},
   })
   const [connections, setConnections] = useState<Connection[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -86,14 +78,26 @@ export default function LetsConnect() {
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({})
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
   const [isSavingProfile, setIsSavingProfile] = useState(false)
-  const [visibilityToggles, setVisibilityToggles] = useState<Record<string, boolean>>({})
-  const supabase = getSupabaseBrowserClient()
+  const [initError, setInitError] = useState<string | null>(null)
+
+  let supabase: ReturnType<typeof getSupabaseBrowserClient> | null = null
+  try {
+    supabase = getSupabaseBrowserClient()
+  } catch (error) {
+    console.error("[v0] Supabase initialization error:", error)
+  }
 
   useEffect(() => {
     checkAuth()
   }, [])
 
   const checkAuth = async () => {
+    if (!supabase) {
+      setInitError("Unable to connect to authentication service. Please check your environment variables.")
+      setIsLoading(false)
+      return
+    }
+
     try {
       const {
         data: { user },
@@ -118,30 +122,8 @@ export default function LetsConnect() {
 
       if (profileData) {
         setProfile(profileData)
-        // Initialize visibility toggles from profile or default all to true
-        const initialToggles = profileData.social_visibility || {}
-        const allSocialFields = ['email', 'phone', 'linkedin', 'twitter', 'instagram', 'github', 'facebook', 'youtube', 'website', 'farcaster']
-        const defaultToggles = allSocialFields.reduce((acc, field) => {
-          acc[field] = initialToggles[field] !== false // Default to true unless explicitly set to false
-          return acc
-        }, {} as Record<string, boolean>)
-        setVisibilityToggles(defaultToggles)
-        
-        // Auto-redirect new users to profile setup
-        if (!profileData.name) {
-          setView("profile")
-        }
       } else {
         setProfile((prev) => ({ ...prev, user_id: userId }))
-        // Default all visibility toggles to true for new users
-        const allSocialFields = ['email', 'phone', 'linkedin', 'twitter', 'instagram', 'github', 'facebook', 'youtube', 'website', 'farcaster']
-        const defaultToggles = allSocialFields.reduce((acc, field) => {
-          acc[field] = true
-          return acc
-        }, {} as Record<string, boolean>)
-        setVisibilityToggles(defaultToggles)
-        // Auto-redirect new users to profile setup
-        setView("profile")
       }
 
       setConnections(connectionsData)
@@ -154,6 +136,8 @@ export default function LetsConnect() {
   }
 
   const handleSignOut = async () => {
+    if (!supabase) return
+
     try {
       await supabase.auth.signOut()
       setUser(null)
@@ -164,35 +148,21 @@ export default function LetsConnect() {
         linkedin: "",
         twitter: "",
         instagram: "",
-        github: "",
-        facebook: "",
-        youtube: "",
-        website: "",
-        farcaster: "",
-        phone: "",
         email: "",
         profile_image: "",
-        social_visibility: {},
       })
-      setVisibilityToggles({})
       setConnections([])
       setView("home")
-      toast.success("Signed out successfully", {
-        description: "See you next time! 👋"
-      })
+      toast.success("Signed out successfully")
     } catch (error) {
       console.error("[v0] Error signing out:", error)
-      toast.error("Failed to sign out", {
-        description: "Please try again or refresh the page"
-      })
+      toast.error("Failed to sign out. Please try again.")
     }
   }
 
   const saveProfile = async (newProfile: Profile) => {
     if (!newProfile.name.trim()) {
-      toast.error("Name is required", {
-        description: "Please enter your full name to continue"
-      })
+      toast.error("Please enter your name")
       return
     }
 
@@ -200,14 +170,10 @@ export default function LetsConnect() {
       setIsSavingProfile(true)
       setProfile(newProfile)
       await upsertProfile(newProfile)
-      toast.success("Profile saved!", {
-        description: "Your changes have been saved successfully"
-      })
+      toast.success("Profile saved successfully")
     } catch (error) {
       console.error("[v0] Error saving profile:", error)
-      toast.error("Failed to save profile", {
-        description: "Please check your connection and try again"
-      })
+      toast.error("Failed to save profile. Please try again.")
     } finally {
       setIsSavingProfile(false)
     }
@@ -215,9 +181,7 @@ export default function LetsConnect() {
 
   const handleScanSuccess = async (scannedProfile: Profile) => {
     if (!user) {
-      toast.error("Sign in required", {
-        description: "Please sign in to add connections"
-      })
+      toast.error("Please sign in to add connections")
       return
     }
 
@@ -225,9 +189,7 @@ export default function LetsConnect() {
       const existingConnection = connections.find((conn) => conn.connected_user_id === scannedProfile.user_id)
 
       if (existingConnection) {
-        toast.info("Already connected!", {
-          description: `You've already connected with ${scannedProfile.name}`
-        })
+        toast.info("You've already connected with this person!")
         setView("connections")
         return
       }
@@ -235,14 +197,10 @@ export default function LetsConnect() {
       await addConnection(user.id, scannedProfile)
       await loadData(user.id)
       setView("connections")
-      toast.success(`Connected with ${scannedProfile.name}!`, {
-        description: "Check your connections to see their profile"
-      })
+      toast.success(`Connected with ${scannedProfile.name}!`)
     } catch (error) {
       console.error("[v0] Error adding connection:", error)
-      toast.error("Failed to add connection", {
-        description: "Please try scanning the QR code again"
-      })
+      toast.error("Failed to add connection. Please try again.")
     }
   }
 
@@ -259,14 +217,10 @@ export default function LetsConnect() {
         delete newState[connectionId]
         return newState
       })
-      toast.success("Notes saved!", {
-        description: "Your notes have been updated"
-      })
+      toast.success("Notes saved successfully")
     } catch (error) {
       console.error("[v0] Error saving notes:", error)
-      toast.error("Failed to save notes", {
-        description: "Please try again or check your connection"
-      })
+      toast.error("Failed to save notes. Please try again.")
     } finally {
       setSavingNotes((prev) => ({ ...prev, [connectionId]: false }))
     }
@@ -276,14 +230,10 @@ export default function LetsConnect() {
     try {
       await deleteConnection(connectionId)
       await loadData(user.id)
-      toast.success(`Removed ${connectionName}`, {
-        description: "Connection has been removed from your list"
-      })
+      toast.success(`Removed ${connectionName} from connections`)
     } catch (error) {
       console.error("[v0] Error deleting connection:", error)
-      toast.error("Failed to remove connection", {
-        description: "Please try again or refresh the page"
-      })
+      toast.error("Failed to delete connection. Please try again.")
     }
   }
 
@@ -295,8 +245,6 @@ export default function LetsConnect() {
     { key: "facebook", label: "Facebook", placeholder: "facebook.com/username" },
     { key: "youtube", label: "YouTube", placeholder: "@channel" },
     { key: "website", label: "Website", placeholder: "yourwebsite.com" },
-    { key: "farcaster", label: "Farcaster", placeholder: "@username" },
-    { key: "phone", label: "Phone/WhatsApp", placeholder: "+1234567890" },
     { key: "email", label: "Email", placeholder: "you@example.com" },
   ]
 
@@ -308,30 +256,35 @@ export default function LetsConnect() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6 flex flex-col items-center justify-center">
-        <div className="max-w-sm sm:max-w-md w-full">
-          <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <div className="text-center flex-1">
-              <Skeleton className="h-8 sm:h-12 w-48 sm:w-64 mx-auto mb-2 sm:mb-3" />
-              <Skeleton className="h-4 sm:h-5 w-32 sm:w-40 mx-auto" />
-            </div>
-            <Skeleton className="w-8 h-8 sm:w-12 sm:h-12 rounded-full" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-black mb-3">Configuration Error</h1>
+          <p className="text-gray-700 mb-6">{initError}</p>
+          <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-4 text-left">
+            <p className="text-sm font-semibold text-gray-900 mb-2">Required Environment Variables:</p>
+            <ul className="text-xs text-gray-700 space-y-1 font-mono">
+              <li>NEXT_PUBLIC_SUPABASE_URL</li>
+              <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
+            </ul>
           </div>
-          
-          <div className="space-y-3 sm:space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="w-full bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-gray-200">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <Skeleton className="w-6 h-6 sm:w-8 sm:h-8 rounded" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 sm:h-5 w-24 sm:w-32 mb-1" />
-                    <Skeleton className="h-3 sm:h-4 w-16 sm:w-20" />
-                  </div>
-                  <Skeleton className="w-4 h-4 sm:w-5 sm:h-5 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </div>
     )
@@ -339,59 +292,57 @@ export default function LetsConnect() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6 flex flex-col items-center justify-center">
-        <div className="text-center mb-6 sm:mb-8 max-w-sm sm:max-w-md">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-3">Let's Connect</h1>
-          <p className="text-gray-700 text-base sm:text-lg">Your social life, one scan away</p>
+      <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold text-black mb-3">Let's Connect</h1>
+          <p className="text-gray-700 text-lg">Your social life, one scan away</p>
         </div>
-        <div className="w-full max-w-sm sm:max-w-md">
         <AuthForm />
-        </div>
       </div>
     )
   }
 
   if (view === "home") {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6 flex flex-col items-center justify-center">
-        <div className="max-w-sm sm:max-w-md w-full">
-          <div className="flex items-center justify-between mb-6 sm:mb-8">
+      <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center">
+        <div className="max-w-md w-full">
+          <div className="flex items-center justify-between mb-8">
             <div className="text-center flex-1">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-2 sm:mb-3">Let's Connect</h1>
-              <p className="text-gray-700 text-sm sm:text-base md:text-lg">Your social life, one scan away</p>
+              <h1 className="text-5xl font-bold text-black mb-3">Let's Connect</h1>
+              <p className="text-gray-700 text-lg">Your social life, one scan away</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="p-2 sm:p-3 hover:bg-gray-100 rounded-full border-2 border-black transition-colors"
+              className="p-3 hover:bg-gray-100 rounded-full border-2 border-black"
               title="Sign Out"
             >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
 
           {!profile.name && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 border-2 border-yellow-600 rounded-xl flex items-start gap-2 sm:gap-3">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-600 rounded-xl flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs sm:text-sm font-semibold text-yellow-900">Complete your profile</p>
+                <p className="text-sm font-semibold text-yellow-900">Complete your profile</p>
                 <p className="text-xs text-yellow-800 mt-1">Add your name and social links to start networking</p>
               </div>
             </div>
           )}
 
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-4">
             <button
               onClick={() => setView("profile")}
-              className="w-full bg-black text-white rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between hover:bg-gray-800 transition-all duration-200 shadow-lg border-2 border-black active:scale-95 hover-lift group"
+              className="w-full bg-black text-white rounded-2xl p-6 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border-2 border-black"
             >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <User className="w-6 h-6 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200" />
+              <div className="flex items-center gap-4">
+                <User className="w-8 h-8" />
                 <div className="text-left">
-                  <div className="font-bold text-base sm:text-lg">My Profile</div>
-                  <div className="text-xs sm:text-sm text-gray-300">Setup your socials</div>
+                  <div className="font-bold text-lg">My Profile</div>
+                  <div className="text-sm text-gray-300">Setup your socials</div>
                 </div>
               </div>
-              <Edit className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform duration-200" />
+              <Edit className="w-5 h-5" />
             </button>
 
             <button
@@ -403,39 +354,39 @@ export default function LetsConnect() {
                 }
                 setView("qr")
               }}
-              className="w-full bg-white text-black rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between hover:bg-gray-100 transition-all duration-200 shadow-lg border-2 border-black active:scale-95 hover-lift group"
+              className="w-full bg-white text-black rounded-2xl p-6 flex items-center justify-between hover:bg-gray-100 transition-colors shadow-lg border-2 border-black"
             >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <QrCode className="w-6 h-6 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200" />
+              <div className="flex items-center gap-4">
+                <QrCode className="w-8 h-8" />
                 <div className="text-left">
-                  <div className="font-bold text-base sm:text-lg">My QR Code</div>
-                  <div className="text-xs sm:text-sm text-gray-600">Show & get scanned</div>
+                  <div className="font-bold text-lg">My QR Code</div>
+                  <div className="text-sm text-gray-600">Show & get scanned</div>
                 </div>
               </div>
             </button>
 
             <button
               onClick={() => setView("scan")}
-              className="w-full bg-black text-white rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between hover:bg-gray-800 transition-all duration-200 shadow-lg border-2 border-black active:scale-95 hover-lift group"
+              className="w-full bg-black text-white rounded-2xl p-6 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border-2 border-black"
             >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <Scan className="w-6 h-6 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200" />
+              <div className="flex items-center gap-4">
+                <Scan className="w-8 h-8" />
                 <div className="text-left">
-                  <div className="font-bold text-base sm:text-lg">Scan Code</div>
-                  <div className="text-xs sm:text-sm text-gray-300">Save connections</div>
+                  <div className="font-bold text-lg">Scan Code</div>
+                  <div className="text-sm text-gray-300">Save connections</div>
                 </div>
               </div>
             </button>
 
             <button
               onClick={() => setView("connections")}
-              className="w-full bg-white text-black rounded-xl sm:rounded-2xl p-4 sm:p-6 flex items-center justify-between hover:bg-gray-100 transition-all duration-200 shadow-lg border-2 border-black active:scale-95 hover-lift group"
+              className="w-full bg-white text-black rounded-2xl p-6 flex items-center justify-between hover:bg-gray-100 transition-colors shadow-lg border-2 border-black"
             >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <Users className="w-6 h-6 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200" />
+              <div className="flex items-center gap-4">
+                <Users className="w-8 h-8" />
                 <div className="text-left">
-                  <div className="font-bold text-base sm:text-lg">My Connections</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{connections.length} saved</div>
+                  <div className="font-bold text-lg">My Connections</div>
+                  <div className="text-sm text-gray-600">{connections.length} saved</div>
                 </div>
               </div>
             </button>
@@ -447,16 +398,16 @@ export default function LetsConnect() {
 
   if (view === "profile") {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6">
-        <div className="max-w-lg sm:max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-black">Your Profile</h2>
-            <button onClick={() => setView("home")} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+      <div className="min-h-screen bg-white p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-black">Your Profile</h2>
+            <button onClick={() => setView("home")} className="p-2 hover:bg-gray-200 rounded-full">
+              <X className="w-6 h-6" />
             </button>
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg mb-4 sm:mb-6 border-2 border-black">
+          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
             <ProfilePhotoUpload
               userId={user.id}
               currentImageUrl={profile.profile_image}
@@ -465,8 +416,8 @@ export default function LetsConnect() {
             />
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg mb-4 sm:mb-6 border-2 border-black">
-            <div className="mb-3 sm:mb-4">
+          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
+            <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 Name <span className="text-red-600">*</span>
               </label>
@@ -475,17 +426,17 @@ export default function LetsConnect() {
                 value={profile.name}
                 onChange={(e) => saveProfile({ ...profile, name: e.target.value })}
                 placeholder="Your full name"
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-black focus:border-black text-sm sm:text-base"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
               />
             </div>
 
-            <div className="mb-3 sm:mb-4">
+            <div className="mb-4">
               <label className="block text-sm font-semibold text-gray-900 mb-2">Bio</label>
               <textarea
                 value={profile.bio || ""}
                 onChange={(e) => saveProfile({ ...profile, bio: e.target.value })}
                 placeholder="Tell people about yourself..."
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-black focus:border-black h-20 sm:h-24 text-sm sm:text-base resize-none"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black h-24"
               />
             </div>
 
@@ -497,17 +448,17 @@ export default function LetsConnect() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-black">
-            <h3 className="text-lg sm:text-xl font-bold text-black mb-3 sm:mb-4">Social Links</h3>
+          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-black">
+            <h3 className="text-xl font-bold text-black mb-4">Social Links</h3>
 
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-3">
               {availableSocials.map((social) => {
                 const Icon = SocialIcons[social.key]
                 const hasValue = profile[social.key as keyof Profile]
 
                 return (
-                  <div key={social.key} className="flex items-center gap-2 sm:gap-3">
-                    <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${hasValue ? "text-black" : "text-gray-400"} flex-shrink-0`} />
+                  <div key={social.key} className="flex items-center gap-3">
+                    <Icon className={`w-6 h-6 ${hasValue ? "text-black" : "text-gray-400"}`} />
                     <input
                       type="text"
                       value={(profile[social.key as keyof Profile] as string) || ""}
@@ -518,7 +469,7 @@ export default function LetsConnect() {
                         })
                       }
                       placeholder={social.placeholder}
-                      className="flex-1 px-3 sm:px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm sm:text-base"
+                      className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
                     />
                   </div>
                 )
@@ -532,81 +483,25 @@ export default function LetsConnect() {
 
   if (view === "qr") {
     return (
-      <div className="min-h-screen bg-black p-4 sm:p-6 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-black p-6 flex flex-col items-center justify-center">
         <button
           onClick={() => setView("home")}
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+          className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full"
         >
-          <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <X className="w-6 h-6 text-white" />
         </button>
 
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Your QR Code</h2>
-          <p className="text-gray-300 text-sm sm:text-base">Let others scan to connect</p>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-white mb-2">Your QR Code</h2>
+          <p className="text-gray-300">Let others scan to connect</p>
         </div>
 
-        {/* Visibility Toggles Panel */}
-        <div className="w-full max-w-xs sm:max-w-sm mb-6">
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg border-2 border-black">
-            <h3 className="text-lg font-bold text-black mb-4">Choose what to share</h3>
-            <div className="space-y-3">
-              {availableSocials.map((social) => {
-                const hasValue = profile[social.key as keyof Profile]
-                if (!hasValue) return null
-                
-                return (
-                  <div key={social.key} className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900">{social.label}</span>
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={visibilityToggles[social.key] !== false}
-                        onChange={(e) => {
-                          const newToggles = { ...visibilityToggles, [social.key]: e.target.checked }
-                          setVisibilityToggles(newToggles)
-                          // Save visibility preferences
-                          saveProfile({ ...profile, social_visibility: newToggles })
-                        }}
-                        className="sr-only"
-                      />
-                      <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        visibilityToggles[social.key] !== false ? 'bg-black' : 'bg-gray-300'
-                      }`}>
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          visibilityToggles[social.key] !== false ? 'translate-x-6' : 'translate-x-1'
-                        }`} />
-                      </div>
-                    </label>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full max-w-xs sm:max-w-sm">
-        <QRCodeDisplay profile={(() => {
-          // Create filtered profile based on visibility toggles
-          const filteredProfile = { ...profile }
-          
-          // Always include required fields
-          const requiredFields = ['user_id', 'name']
-          
-          // Filter out fields that are not visible
-          Object.keys(filteredProfile).forEach(key => {
-            if (!requiredFields.includes(key) && visibilityToggles[key] === false) {
-              delete filteredProfile[key as keyof Profile]
-            }
-          })
-          
-          return filteredProfile
-        })()} />
-        </div>
+        <QRCodeDisplay profile={profile} />
 
         {profile.name && (
-          <div className="mt-4 sm:mt-6 text-center max-w-sm">
-            <div className="text-lg sm:text-2xl font-bold text-white">{profile.name}</div>
-            <div className="text-gray-300 text-sm sm:text-base">{profile.bio}</div>
+          <div className="mt-6 text-center">
+            <div className="text-2xl font-bold text-white">{profile.name}</div>
+            <div className="text-gray-300">{profile.bio}</div>
           </div>
         )}
       </div>
@@ -616,15 +511,14 @@ export default function LetsConnect() {
   if (view === "scan") {
     return (
       <div className="min-h-screen bg-black flex flex-col">
-        <div className="p-4 sm:p-6 flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-white">Scan QR Code</h2>
-          <button onClick={() => setView("home")} className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors">
-            <X className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div className="p-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Scan QR Code</h2>
+          <button onClick={() => setView("home")} className="p-2 bg-white/20 hover:bg-white/30 rounded-full">
+            <X className="w-6 h-6 text-white" />
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
-          <div className="w-full max-w-sm sm:max-w-md">
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
           <QRScanner
             onScanSuccess={handleScanSuccess}
             onScanError={(error) => {
@@ -632,7 +526,6 @@ export default function LetsConnect() {
               toast.error(error)
             }}
           />
-          </div>
         </div>
       </div>
     )
@@ -640,65 +533,36 @@ export default function LetsConnect() {
 
   if (view === "connections") {
     return (
-      <div className="min-h-screen bg-white p-4 sm:p-6">
-        <div className="max-w-lg sm:max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-black">My Connections</h2>
-            <button onClick={() => setView("home")} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+      <div className="min-h-screen bg-white p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-black">My Connections</h2>
+            <button onClick={() => setView("home")} className="p-2 hover:bg-gray-200 rounded-full">
+              <X className="w-6 h-6" />
             </button>
           </div>
 
           {connections.length === 0 ? (
-            <div className="text-center py-8 sm:py-12">
-              <Users className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-              <p className="text-gray-600 text-sm sm:text-base">No connections yet</p>
-              <p className="text-gray-500 text-xs sm:text-sm">Scan QR codes to save profiles</p>
-            </div>
-          ) : isLoading ? (
-            <div className="space-y-3 sm:space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-gray-200">
-                  <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <Skeleton className="w-12 h-12 sm:w-16 sm:h-16 rounded-full" />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <Skeleton className="h-4 sm:h-5 w-24 sm:w-32 mb-2" />
-                          <Skeleton className="h-3 sm:h-4 w-full mb-1" />
-                          <Skeleton className="h-3 sm:h-4 w-20" />
-                        </div>
-                        <Skeleton className="w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
-                        {[...Array(3)].map((_, j) => (
-                          <Skeleton key={j} className="h-6 sm:h-7 w-16 sm:w-20 rounded-full" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t-2 border-gray-200">
-                    <Skeleton className="h-3 sm:h-4 w-12 mb-2" />
-                    <Skeleton className="h-16 sm:h-20 w-full rounded-lg" />
-                  </div>
-                </div>
-              ))}
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No connections yet</p>
+              <p className="text-gray-500 text-sm">Scan QR codes to save profiles</p>
             </div>
           ) : (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4">
               {connections.map((conn) => {
                 const isEditingNote = editingNotes[conn.id!] !== undefined
                 const currentNotes = isEditingNote ? editingNotes[conn.id!] : conn.notes || ""
 
                 return (
-                  <div key={conn.id} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border-2 border-black">
-                    <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                      <Avatar className="w-12 h-12 sm:w-16 sm:h-16 border-2 border-black flex-shrink-0">
+                  <div key={conn.id} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-black">
+                    <div className="flex items-start gap-4 mb-4">
+                      <Avatar className="w-16 h-16 border-2 border-black">
                         <AvatarImage
                           src={conn.connection_data.profile_image || undefined}
                           alt={conn.connection_data.name}
                         />
-                        <AvatarFallback className="bg-gray-200 text-black font-bold text-xs sm:text-base">
+                        <AvatarFallback className="bg-gray-200 text-black font-bold">
                           {conn.connection_data.name
                             ?.split(" ")
                             .map((n) => n[0])
@@ -708,11 +572,11 @@ export default function LetsConnect() {
                         </AvatarFallback>
                       </Avatar>
 
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base sm:text-xl font-bold text-black truncate">{conn.connection_data.name}</h3>
-                            <p className="text-gray-700 text-xs sm:text-sm line-clamp-2">{conn.connection_data.bio}</p>
+                          <div>
+                            <h3 className="text-xl font-bold text-black">{conn.connection_data.name}</h3>
+                            <p className="text-gray-700 text-sm">{conn.connection_data.bio}</p>
                             <p className="text-gray-500 text-xs mt-1">
                               Scanned {new Date(conn.created_at!).toLocaleDateString()}
                             </p>
@@ -723,20 +587,20 @@ export default function LetsConnect() {
                                 handleDeleteConnection(conn.id!, conn.connection_data.name)
                               }
                             }}
-                            className="p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                            className="p-2 hover:bg-gray-100 rounded-full"
                           >
-                            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                            <X className="w-5 h-5 text-gray-400" />
                           </button>
                         </div>
 
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+                        <div className="flex flex-wrap gap-2 mt-3">
                           {Object.entries(conn.connection_data)
                             .filter(([key]) =>
                               ["instagram", "twitter", "linkedin", "github", "email", "website"].includes(key),
                             )
                             .filter(([_, value]) => value)
                             .map(([key, value]) => {
-                              const Icon = SocialIcons[key]
+                              const Icon = SocialIcons[key as keyof typeof SocialIcons]
                               if (!Icon) return null
                               return (
                                 <a
@@ -750,10 +614,10 @@ export default function LetsConnect() {
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-xs sm:text-sm"
+                                  className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-sm"
                                 >
-                                  <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                                  <span className="font-medium hidden sm:inline">{key}</span>
+                                  <Icon className="w-3.5 h-3.5" />
+                                  <span className="font-medium">{key}</span>
                                 </a>
                               )
                             })}
@@ -761,11 +625,11 @@ export default function LetsConnect() {
                       </div>
                     </div>
 
-                    <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t-2 border-gray-200">
+                    <div className="mt-4 pt-4 border-t-2 border-gray-200">
                       <div className="flex items-start gap-2">
-                        <StickyNote className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 mt-1 sm:mt-2 flex-shrink-0" />
+                        <StickyNote className="w-5 h-5 text-gray-600 mt-2" />
                         <div className="flex-1">
-                          <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Notes</label>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">Notes</label>
                           <textarea
                             value={currentNotes}
                             onChange={(e) =>
@@ -775,7 +639,7 @@ export default function LetsConnect() {
                               }))
                             }
                             placeholder="Add notes about this connection..."
-                            className="w-full px-3 sm:px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-xs sm:text-sm resize-none"
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm resize-none"
                             rows={2}
                           />
                           {isEditingNote && (
@@ -783,9 +647,9 @@ export default function LetsConnect() {
                               <button
                                 onClick={() => handleSaveNotes(conn.id!)}
                                 disabled={savingNotes[conn.id!]}
-                                className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-xs sm:text-sm disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
                               >
-                                <Save className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <Save className="w-4 h-4" />
                                 {savingNotes[conn.id!] ? "Saving..." : "Save"}
                               </button>
                               <button
@@ -796,7 +660,7 @@ export default function LetsConnect() {
                                     return newState
                                   })
                                 }
-                                className="px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-xs sm:text-sm"
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-sm"
                               >
                                 Cancel
                               </button>

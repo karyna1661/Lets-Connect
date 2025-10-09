@@ -2,6 +2,7 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 import type { Profile } from "@/lib/types"
+import { revalidatePath } from "next/cache"
 
 export async function getProfile(userId: string) {
   const supabase = await getSupabaseServerClient()
@@ -38,6 +39,7 @@ export async function upsertProfile(profile: Profile) {
     throw new Error("Failed to save profile")
   }
 
+  revalidatePath("/")
   return data
 }
 

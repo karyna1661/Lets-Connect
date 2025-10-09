@@ -2,6 +2,7 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 import type { Connection, Profile } from "@/lib/types"
+import { revalidatePath } from "next/cache"
 
 export async function getConnections(userId: string) {
   const supabase = await getSupabaseServerClient()
@@ -39,6 +40,7 @@ export async function addConnection(userId: string, connectionData: Profile, not
     throw new Error("Failed to add connection")
   }
 
+  revalidatePath("/")
   return data
 }
 
@@ -52,6 +54,7 @@ export async function updateConnectionNotes(connectionId: string, notes: string)
     throw new Error("Failed to update notes")
   }
 
+  revalidatePath("/")
   return data
 }
 
@@ -64,4 +67,6 @@ export async function deleteConnection(connectionId: string) {
     console.error("[v0] Error deleting connection:", error)
     throw new Error("Failed to delete connection")
   }
+
+  revalidatePath("/")
 }
