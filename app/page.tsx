@@ -261,10 +261,16 @@ export default function LetsConnect() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="relative w-24 h-24 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--color-neon-lime)] border-r-[var(--color-neon-pink)] animate-spin"></div>
+            <div
+              className="absolute inset-4 rounded-full border-4 border-transparent border-b-[var(--color-neon-cyan)] animate-spin"
+              style={{ animationDirection: "reverse", animationDuration: "2s" }}
+            ></div>
+          </div>
+          <p className="text-[var(--color-neon-lime)] font-display text-xl neon-glow">Loading...</p>
         </div>
       </div>
     )
@@ -297,10 +303,17 @@ export default function LetsConnect() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-black mb-3">Let's Connect</h1>
-          <p className="text-gray-700 text-lg">Your social life, one scan away</p>
+      <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-6 flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-radial from-[var(--color-neon-pink)] via-transparent to-transparent rounded-full blur-3xl opacity-20"></div>
+          <div className="absolute bottom-20 left-0 w-96 h-96 bg-gradient-radial from-[var(--color-neon-cyan)] via-transparent to-transparent rounded-full blur-3xl opacity-20"></div>
+        </div>
+
+        <div className="text-center mb-8 relative z-10">
+          <h1 className="text-6xl font-display text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-neon-lime)] via-[var(--color-neon-pink)] to-[var(--color-neon-cyan)] mb-3 neon-glow">
+            Let's Connect
+          </h1>
+          <p className="text-[var(--color-neon-cyan)] text-lg font-light">Your social life, one scan away</p>
         </div>
         <AuthForm />
       </div>
@@ -309,31 +322,42 @@ export default function LetsConnect() {
 
   if (view === "home") {
     return (
-      <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center">
-        <div className="max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-6 flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-1/4 w-80 h-80 bg-gradient-radial from-[var(--color-neon-lime)] via-transparent to-transparent rounded-full blur-3xl opacity-10"></div>
+          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-gradient-radial from-[var(--color-neon-pink)] via-transparent to-transparent rounded-full blur-3xl opacity-10"></div>
+        </div>
+
+        <div className="max-w-md w-full relative z-10">
           <div className="flex items-center justify-between mb-8">
             <div className="text-center flex-1">
-              <h1 className="text-5xl font-bold text-black mb-3">Let's Connect</h1>
-              <p className="text-gray-700 text-lg">Your social life, one scan away</p>
+              <h1 className="text-5xl font-display text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-neon-lime)] to-[var(--color-neon-pink)] mb-3 neon-glow">
+                Let's Connect
+              </h1>
+              <p className="text-[var(--color-neon-cyan)] text-lg">Your social life, one scan away</p>
             </div>
             <div className="flex gap-2">
               {user && <SeedDemoButton userId={user.id} />}
               <button
                 onClick={handleSignOut}
-                className="p-3 hover:bg-gray-100 rounded-full border-2 border-black"
+                className="p-3 hover:bg-white/10 rounded-full border-2 border-[var(--color-neon-pink)] hover:border-[var(--color-neon-lime)] transition-all glow-border"
                 title="Sign Out"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-5 h-5 text-[var(--color-neon-pink)]" />
               </button>
             </div>
           </div>
 
           {!profile.name && (
-            <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-600 rounded-xl flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-yellow-900">Complete your profile</p>
-                <p className="text-xs text-yellow-800 mt-1">Add your name and social links to start networking</p>
+            <div className="mb-6 p-4 glass-effect border-l-4 border-[var(--color-neon-orange)] rounded-xl">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-[var(--color-neon-orange)] mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-[var(--color-neon-lime)]">Complete your profile</p>
+                  <p className="text-xs text-[var(--color-neon-cyan)] mt-1">
+                    Add your name and social links to start networking
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -341,16 +365,16 @@ export default function LetsConnect() {
           <div className="space-y-4">
             <button
               onClick={() => setView("profile")}
-              className="w-full bg-black text-white rounded-2xl p-6 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border-2 border-black"
+              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
             >
               <div className="flex items-center gap-4">
-                <User className="w-8 h-8" />
+                <User className="w-8 h-8 text-[var(--color-neon-lime)] group-hover:animate-hue" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">My Profile</div>
-                  <div className="text-sm text-gray-300">Setup your socials</div>
+                  <div className="font-display text-lg text-[var(--color-neon-lime)] neon-glow">My Profile</div>
+                  <div className="text-sm text-[var(--color-neon-cyan)]">Setup your socials</div>
                 </div>
               </div>
-              <Edit className="w-5 h-5" />
+              <Edit className="w-5 h-5 text-[var(--color-neon-pink)]" />
             </button>
 
             <button
@@ -362,26 +386,26 @@ export default function LetsConnect() {
                 }
                 window.location.href = "/discover"
               }}
-              className="w-full bg-white text-black rounded-2xl p-6 flex items-center justify-between hover:bg-gray-100 transition-colors shadow-lg border-2 border-black"
+              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
             >
               <div className="flex items-center gap-4">
-                <Heart className="w-8 h-8" />
+                <Heart className="w-8 h-8 text-[var(--color-neon-pink)] group-hover:animate-pulse" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">Discover</div>
-                  <div className="text-sm text-gray-600">Swipe & match</div>
+                  <div className="font-display text-lg text-[var(--color-neon-pink)] neon-glow">Discover</div>
+                  <div className="text-sm text-[var(--color-neon-cyan)]">Swipe & match</div>
                 </div>
               </div>
             </button>
 
             <button
               onClick={() => (window.location.href = "/events")}
-              className="w-full bg-black text-white rounded-2xl p-6 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border-2 border-black"
+              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
             >
               <div className="flex items-center gap-4">
-                <Calendar className="w-8 h-8" />
+                <Calendar className="w-8 h-8 text-[var(--color-neon-cyan)] group-hover:animate-hue" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">Events</div>
-                  <div className="text-sm text-gray-300">Find attendees</div>
+                  <div className="font-display text-lg text-[var(--color-neon-cyan)] neon-glow">Events</div>
+                  <div className="text-sm text-[var(--color-neon-pink)]">Find attendees</div>
                 </div>
               </div>
             </button>
@@ -395,39 +419,39 @@ export default function LetsConnect() {
                 }
                 setView("qr")
               }}
-              className="w-full bg-white text-black rounded-2xl p-6 flex items-center justify-between hover:bg-gray-100 transition-colors shadow-lg border-2 border-black"
+              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
             >
               <div className="flex items-center gap-4">
-                <QrCode className="w-8 h-8" />
+                <QrCode className="w-8 h-8 text-[var(--color-neon-lime)] group-hover:animate-spin" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">My QR Code</div>
-                  <div className="text-sm text-gray-600">Show & get scanned</div>
+                  <div className="font-display text-lg text-[var(--color-neon-lime)] neon-glow">My QR Code</div>
+                  <div className="text-sm text-[var(--color-neon-cyan)]">Show & get scanned</div>
                 </div>
               </div>
             </button>
 
             <button
               onClick={() => setView("scan")}
-              className="w-full bg-black text-white rounded-2xl p-6 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border-2 border-black"
+              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
             >
               <div className="flex items-center gap-4">
-                <Scan className="w-8 h-8" />
+                <Scan className="w-8 h-8 text-[var(--color-neon-orange)] group-hover:animate-bounce" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">Scan Code</div>
-                  <div className="text-sm text-gray-300">Save connections</div>
+                  <div className="font-display text-lg text-[var(--color-neon-orange)] neon-glow">Scan Code</div>
+                  <div className="text-sm text-[var(--color-neon-cyan)]">Save connections</div>
                 </div>
               </div>
             </button>
 
             <button
               onClick={() => setView("connections")}
-              className="w-full bg-white text-black rounded-2xl p-6 flex items-center justify-between hover:bg-gray-100 transition-colors shadow-lg border-2 border-black"
+              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
             >
               <div className="flex items-center gap-4">
-                <Users className="w-8 h-8" />
+                <Users className="w-8 h-8 text-[var(--color-neon-pink)] group-hover:animate-pulse" />
                 <div className="text-left">
-                  <div className="font-bold text-lg">My Connections</div>
-                  <div className="text-sm text-gray-600">{connections.length} saved</div>
+                  <div className="font-display text-lg text-[var(--color-neon-pink)] neon-glow">My Connections</div>
+                  <div className="text-sm text-[var(--color-neon-cyan)]">{connections.length} saved</div>
                 </div>
               </div>
             </button>
