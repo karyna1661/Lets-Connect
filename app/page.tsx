@@ -20,6 +20,9 @@ import {
   Save,
   StickyNote,
   AlertCircle,
+  Heart,
+  Calendar,
+  Zap,
 } from "lucide-react"
 import { getProfile, upsertProfile } from "./actions/profile"
 import { getConnections, addConnection, deleteConnection, updateConnectionNotes } from "./actions/connections"
@@ -29,8 +32,10 @@ import { AuthForm } from "@/components/auth-form"
 import { QRCodeDisplay } from "@/components/qr-code-display"
 import { QRScanner } from "@/components/qr-scanner"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
+import { POAPSyncButton } from "@/components/poap-sync-button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
+import { SeedDemoButton } from "@/components/seed-demo-button"
 
 const SocialIcons = {
   instagram: Instagram,
@@ -70,6 +75,11 @@ export default function LetsConnect() {
     instagram: "",
     email: "",
     profile_image: "",
+    city: "",
+    role: "Other",
+    interests: [],
+    is_discoverable: true,
+    location_sharing: "off",
   })
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [connections, setConnections] = useState<Connection[]>([])
@@ -150,6 +160,11 @@ export default function LetsConnect() {
         instagram: "",
         email: "",
         profile_image: "",
+        city: "",
+        role: "Other",
+        interests: [],
+        is_discoverable: true,
+        location_sharing: "off",
       })
       setConnections([])
       setView("home")
@@ -238,17 +253,6 @@ export default function LetsConnect() {
     }
   }
 
-  const availableSocials = [
-    { key: "instagram", label: "Instagram", placeholder: "@username" },
-    { key: "twitter", label: "Twitter/X", placeholder: "@username" },
-    { key: "linkedin", label: "LinkedIn", placeholder: "linkedin.com/in/username" },
-    { key: "github", label: "GitHub", placeholder: "github.com/username" },
-    { key: "facebook", label: "Facebook", placeholder: "facebook.com/username" },
-    { key: "youtube", label: "YouTube", placeholder: "@channel" },
-    { key: "website", label: "Website", placeholder: "yourwebsite.com" },
-    { key: "email", label: "Email", placeholder: "you@example.com" },
-  ]
-
   useEffect(() => {
     if (view === "qr") {
       setTimeout(() => {}, 100)
@@ -312,13 +316,16 @@ export default function LetsConnect() {
               <h1 className="text-5xl font-bold text-black mb-3">Let's Connect</h1>
               <p className="text-gray-700 text-lg">Your social life, one scan away</p>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="p-3 hover:bg-gray-100 rounded-full border-2 border-black"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            <div className="flex gap-2">
+              {user && <SeedDemoButton userId={user.id} />}
+              <button
+                onClick={handleSignOut}
+                className="p-3 hover:bg-gray-100 rounded-full border-2 border-black"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {!profile.name && (
@@ -344,6 +351,39 @@ export default function LetsConnect() {
                 </div>
               </div>
               <Edit className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => {
+                if (!profile.name) {
+                  toast.error("Please complete your profile first")
+                  setView("profile")
+                  return
+                }
+                window.location.href = "/discover"
+              }}
+              className="w-full bg-white text-black rounded-2xl p-6 flex items-center justify-between hover:bg-gray-100 transition-colors shadow-lg border-2 border-black"
+            >
+              <div className="flex items-center gap-4">
+                <Heart className="w-8 h-8" />
+                <div className="text-left">
+                  <div className="font-bold text-lg">Discover</div>
+                  <div className="text-sm text-gray-600">Swipe & match</div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => (window.location.href = "/events")}
+              className="w-full bg-black text-white rounded-2xl p-6 flex items-center justify-between hover:bg-gray-800 transition-colors shadow-lg border-2 border-black"
+            >
+              <div className="flex items-center gap-4">
+                <Calendar className="w-8 h-8" />
+                <div className="text-left">
+                  <div className="font-bold text-lg">Events</div>
+                  <div className="text-sm text-gray-300">Find attendees</div>
+                </div>
+              </div>
             </button>
 
             <button
@@ -399,6 +439,7 @@ export default function LetsConnect() {
 
   if (view === "profile") {
     const currentProfile = editingProfile || profile
+    const roles = ["Builder", "Founder", "Investor", "Creator", "Other"]
 
     return (
       <div className="min-h-screen bg-white p-6">
@@ -472,34 +513,140 @@ export default function LetsConnect() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black h-24"
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">City</label>
+                <input
+                  type="text"
+                  value={currentProfile.city || ""}
+                  onChange={(e) =>
+                    setEditingProfile({
+                      ...(editingProfile || profile),
+                      city: e.target.value,
+                    })
+                  }
+                  placeholder="Your city"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Role</label>
+                <select
+                  value={currentProfile.role || "Other"}
+                  onChange={(e) =>
+                    setEditingProfile({
+                      ...(editingProfile || profile),
+                      role: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
+                >
+                  {roles.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">Interests (comma separated)</label>
+              <input
+                type="text"
+                value={(currentProfile.interests || []).join(", ")}
+                onChange={(e) =>
+                  setEditingProfile({
+                    ...(editingProfile || profile),
+                    interests: e.target.value
+                      .split(",")
+                      .map((i) => i.trim())
+                      .filter((i) => i),
+                  })
+                }
+                placeholder="e.g. Web3, AI, Design"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex items-center gap-3 p-3 border-2 border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={currentProfile.is_discoverable || true}
+                  onChange={(e) =>
+                    setEditingProfile({
+                      ...(editingProfile || profile),
+                      is_discoverable: e.target.checked,
+                    })
+                  }
+                  className="w-5 h-5 accent-black"
+                />
+                <span className="text-sm font-semibold text-gray-900">Show in Discovery</span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Location Sharing</label>
+                <select
+                  value={currentProfile.location_sharing || "off"}
+                  onChange={(e) =>
+                    setEditingProfile({
+                      ...(editingProfile || profile),
+                      location_sharing: e.target.value as "off" | "city" | "precise",
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
+                >
+                  <option value="off">Private</option>
+                  <option value="city">City Only</option>
+                  <option value="precise">Precise</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
+            <div className="flex items-center gap-3 mb-4">
+              <Zap className="w-6 h-6 text-black" />
+              <h3 className="text-xl font-bold text-black mb-4">POAP Sync</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Connect your Ethereum wallet to sync your POAP collection and unlock compatibility matching
+            </p>
+            <POAPSyncButton userId={user.id} currentWallet={currentProfile.wallet_hash} />
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-black">
             <h3 className="text-xl font-bold text-black mb-4">Social Links</h3>
 
             <div className="space-y-3">
-              {availableSocials.map((social) => {
-                const Icon = SocialIcons[social.key]
-                const hasValue = currentProfile[social.key as keyof Profile]
-
-                return (
-                  <div key={social.key} className="flex items-center gap-3">
-                    <Icon className={`w-6 h-6 ${hasValue ? "text-black" : "text-gray-400"}`} />
-                    <input
-                      type="text"
-                      value={(currentProfile[social.key as keyof Profile] as string) || ""}
-                      onChange={(e) =>
-                        setEditingProfile({
-                          ...(editingProfile || profile),
-                          [social.key]: e.target.value,
-                        })
-                      }
-                      placeholder={social.placeholder}
-                      className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
-                    />
-                  </div>
-                )
-              })}
+              {[
+                { key: "instagram", label: "Instagram", placeholder: "@username" },
+                { key: "twitter", label: "Twitter/X", placeholder: "@username" },
+                { key: "linkedin", label: "LinkedIn", placeholder: "linkedin.com/in/username" },
+                { key: "github", label: "GitHub", placeholder: "github.com/username" },
+                { key: "facebook", label: "Facebook", placeholder: "facebook.com/username" },
+                { key: "youtube", label: "YouTube", placeholder: "@channel" },
+                { key: "website", label: "Website", placeholder: "yourwebsite.com" },
+                { key: "email", label: "Email", placeholder: "you@example.com" },
+              ].map((social) => (
+                <div key={social.key} className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={(currentProfile[social.key as keyof Profile] as string) || ""}
+                    onChange={(e) =>
+                      setEditingProfile({
+                        ...(editingProfile || profile),
+                        [social.key]: e.target.value,
+                      })
+                    }
+                    placeholder={social.placeholder}
+                    className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>

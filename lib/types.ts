@@ -12,6 +12,12 @@ export interface Profile {
   bio?: string
   profile_image?: string
   qr_code?: string
+  city?: string
+  role?: string
+  interests?: string[]
+  is_discoverable?: boolean
+  location_sharing?: "off" | "city" | "precise"
+  wallet_hash?: string
   created_at?: string
   updated_at?: string
 }
@@ -22,5 +28,6 @@ export interface Connection {
   connected_user_id: string
   connection_data: Profile
   notes?: string
+  connection_type?: "qr" | "swipe" | "manual"
   created_at?: string
 }
