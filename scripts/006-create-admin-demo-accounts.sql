@@ -25,7 +25,7 @@ INSERT INTO profiles (
 ) VALUES (
   'admin-demo-user',
   'Admin Demo',
-  'Test admin account for Let\'s Connect demo and testing',
+  'Test admin account for Let''s Connect demo and testing',
   'admin@letsconnect.test',
   'San Francisco',
   'Founder',
@@ -39,7 +39,7 @@ INSERT INTO profiles (
   'letsconnect.test'
 ) ON CONFLICT (user_id) DO UPDATE SET
   name = 'Admin Demo',
-  bio = 'Test admin account for Let\'s Connect demo and testing',
+  bio = 'Test admin account for Let''s Connect demo and testing',
   updated_at = NOW();
 
 -- Demo account 1 - Builder

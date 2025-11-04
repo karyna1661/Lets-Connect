@@ -1,5 +1,10 @@
+-- Drop functions before creating them to avoid parameter name conflicts
+DROP FUNCTION IF EXISTS get_shared_poaps_count(TEXT, TEXT);
+DROP FUNCTION IF EXISTS get_shared_poaps(TEXT, TEXT);
+DROP FUNCTION IF EXISTS calculate_compatibility_score(TEXT, TEXT);
+
 -- Function to calculate shared POAPs count
-CREATE OR REPLACE FUNCTION get_shared_poaps_count(p_user_id TEXT, p_target_user_id TEXT)
+CREATE FUNCTION get_shared_poaps_count(p_user_id TEXT, p_target_user_id TEXT)
 RETURNS INTEGER AS $$
   SELECT COUNT(DISTINCT p1.poap_hash)
   FROM poaps p1
@@ -11,9 +16,10 @@ RETURNS INTEGER AS $$
 $$ LANGUAGE SQL STABLE;
 
 -- Function to get shared POAPs details
-CREATE OR REPLACE FUNCTION get_shared_poaps(p_user_id TEXT, p_target_user_id TEXT)
-RETURNS TABLE(poap_hash TEXT, event_name TEXT, event_image_url TEXT) AS $$
-  SELECT DISTINCT p1.poap_hash, p1.event_name, p1.event_image_url
+CREATE FUNCTION get_shared_poaps(p_user_id TEXT, p_target_user_id TEXT)
+RETURNS TABLE(poap_hash TEXT, event_name TEXT, event_image_url TEXT, event_date TIMESTAMP) AS $$
+  -- Added event_date to SELECT clause to allow ORDER BY with DISTINCT
+  SELECT DISTINCT p1.poap_hash, p1.event_name, p1.event_image_url, p1.event_date
   FROM poaps p1
   JOIN poaps p2 ON p1.poap_hash = p2.poap_hash
   WHERE p1.user_id = p_user_id
@@ -24,7 +30,7 @@ RETURNS TABLE(poap_hash TEXT, event_name TEXT, event_image_url TEXT) AS $$
 $$ LANGUAGE SQL STABLE;
 
 -- Function to calculate compatibility score
-CREATE OR REPLACE FUNCTION calculate_compatibility_score(
+CREATE FUNCTION calculate_compatibility_score(
   p_user_id TEXT,
   p_target_user_id TEXT
 )

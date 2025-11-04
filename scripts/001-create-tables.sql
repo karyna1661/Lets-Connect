@@ -37,7 +37,16 @@ CREATE INDEX IF NOT EXISTS idx_connections_connected_user_id ON connections(conn
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE connections ENABLE ROW LEVEL SECURITY;
 
--- Create policies for profiles (users can read all profiles, but only update their own)
+-- Drop existing policies before creating to avoid conflicts
+DROP POLICY IF EXISTS "Anyone can read profiles" ON profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can read their own connections" ON connections;
+DROP POLICY IF EXISTS "Users can insert their own connections" ON connections;
+DROP POLICY IF EXISTS "Users can update their own connections" ON connections;
+DROP POLICY IF EXISTS "Users can delete their own connections" ON connections;
+
+-- Create placeholder policies (will be replaced by script 002 with secure auth-based policies)
 CREATE POLICY "Anyone can read profiles" ON profiles
   FOR SELECT USING (true);
 

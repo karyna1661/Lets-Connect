@@ -2,7 +2,15 @@
 
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import crypto from "crypto"
+
+async function hashWalletAddress(address: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(address.toLowerCase())
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  return hashHex
+}
 
 const getSupabaseServer = () => {
   const cookieStore = cookies()
@@ -24,10 +32,6 @@ const getSupabaseServer = () => {
   )
 }
 
-function hashWalletAddress(address: string): string {
-  return crypto.createHash("sha256").update(address.toLowerCase()).digest("hex")
-}
-
 export async function linkWallet(userId: string, walletAddress: string) {
   try {
     // Validate wallet format
@@ -36,7 +40,7 @@ export async function linkWallet(userId: string, walletAddress: string) {
     }
 
     const supabase = getSupabaseServer()
-    const walletHash = hashWalletAddress(walletAddress)
+    const walletHash = await hashWalletAddress(walletAddress)
 
     // Upsert wallet
     const { error: walletError } = await supabase.from("wallets").upsert(

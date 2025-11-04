@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Heart, X, Zap } from "lucide-react"
+import { Heart, X, Zap, ChevronDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { FlipCard } from "@/components/flip-card"
 import type { Profile } from "@/lib/types"
 
 interface SwipeCardProps {
@@ -24,11 +25,11 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
     }, 300)
   }
 
-  return (
+  const frontContent = (
     <div
       className={`
         relative w-full max-w-sm mx-auto bg-white rounded-3xl shadow-2xl border-2 border-black
-        transition-all duration-300 transform
+        transition-all duration-300 transform h-full
         ${isAnimating ? "scale-95 opacity-0" : "scale-100 opacity-100"}
       `}
     >
@@ -51,6 +52,11 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
             <span className="font-bold">{Math.round(compatibilityScore)}%</span>
           </div>
         )}
+
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-1 text-white bg-black bg-opacity-60 px-3 py-2 rounded-full text-xs font-semibold">
+          <ChevronDown className="w-3 h-3" />
+          Tap to flip
+        </div>
       </div>
 
       <div className="p-6">
@@ -60,7 +66,7 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
           {profile.city && <p className="text-gray-600 text-sm">{profile.city}</p>}
         </div>
 
-        {profile.bio && <p className="text-gray-700 mb-4 line-clamp-3">{profile.bio}</p>}
+        {profile.bio && <p className="text-gray-700 mb-4 line-clamp-2">{profile.bio}</p>}
 
         {sharedPOAPs > 0 && (
           <div className="mb-4 p-3 bg-gray-100 rounded-lg border-2 border-gray-300">
@@ -69,28 +75,41 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
             </p>
           </div>
         )}
+      </div>
+    </div>
+  )
+
+  const backContent = (
+    <div className="w-full max-w-sm mx-auto bg-gradient-to-br from-gray-900 to-black rounded-3xl border-2 border-white shadow-2xl h-full p-6 flex flex-col justify-between">
+      <div>
+        <h3 className="text-white text-xl font-bold mb-4">More about {profile.name}</h3>
 
         {profile.interests && profile.interests.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {profile.interests.slice(0, 3).map((interest, idx) => (
-              <span key={idx} className="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
-                {interest}
-              </span>
-            ))}
-            {profile.interests.length > 3 && (
-              <span className="px-3 py-1 bg-gray-300 text-black text-xs font-semibold rounded-full">
-                +{profile.interests.length - 3}
-              </span>
-            )}
+          <div className="mb-6">
+            <p className="text-gray-300 text-sm font-semibold mb-2">Interests</p>
+            <div className="flex flex-wrap gap-2">
+              {profile.interests.map((interest, idx) => (
+                <span key={idx} className="px-3 py-1 bg-white text-black text-xs font-bold rounded-full">
+                  {interest}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {profile.bio && (
+          <div className="mb-6">
+            <p className="text-gray-300 text-sm font-semibold mb-2">Bio</p>
+            <p className="text-gray-200 text-sm leading-relaxed">{profile.bio}</p>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 p-6 border-t-2 border-black bg-gray-50">
+      <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => handleSwipe("left")}
           disabled={isLoading || isAnimating}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-black border-2 border-gray-300 rounded-xl hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-black border-2 border-white rounded-xl hover:bg-gray-200 transition-colors font-semibold disabled:opacity-50"
         >
           <X className="w-5 h-5" />
           Pass
@@ -98,12 +117,18 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
         <button
           onClick={() => handleSwipe("right")}
           disabled={isLoading || isAnimating}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-black text-white border-2 border-black rounded-xl hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-black border-2 border-white rounded-xl hover:bg-gray-200 transition-colors font-semibold disabled:opacity-50"
         >
           <Heart className="w-5 h-5" />
           Like
         </button>
       </div>
+    </div>
+  )
+
+  return (
+    <div className="w-full max-w-sm mx-auto h-full">
+      <FlipCard front={frontContent} back={backContent} duration={300} zDepth="lg" />
     </div>
   )
 }
