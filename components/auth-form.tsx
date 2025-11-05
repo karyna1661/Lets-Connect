@@ -78,19 +78,19 @@ export function AuthForm() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
-      <Card className="glass-effect border-2 border-[var(--color-neon-pink)] glow-border">
-        <CardHeader className="border-b-2 border-[var(--color-neon-cyan)]">
-          <CardTitle className="text-2xl font-display text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-neon-lime)] to-[var(--color-neon-pink)] neon-glow">
+      <Card className="bg-white border-2 border-black rounded-3xl shadow-2xl">
+        <CardHeader className="border-b-2 border-black pb-6">
+          <CardTitle className="text-3xl font-bold text-black" style={{ fontFamily: 'Satoshi, sans-serif' }}>
             {isSignUp ? "Create Account" : "Sign In"}
           </CardTitle>
-          <CardDescription className="text-[var(--color-neon-cyan)]">
+          <CardDescription className="text-gray-600" style={{ fontFamily: 'Inter, sans-serif' }}>
             {isSignUp ? "Sign up to start networking with QR codes" : "Sign in to access your profile"}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[var(--color-neon-lime)]">
+              <Label htmlFor="email" className="text-black font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Email
               </Label>
               <Input
@@ -100,11 +100,12 @@ export function AuthForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-2 border-[var(--color-neon-cyan)] glass-effect text-white placeholder:text-gray-400 focus:border-[var(--color-neon-lime)]"
+                className="border-2 border-black bg-white text-black placeholder:text-gray-400 focus:border-gray-600 rounded-xl h-12"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[var(--color-neon-lime)]">
+              <Label htmlFor="password" className="text-black font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Password
               </Label>
               <Input
@@ -115,12 +116,14 @@ export function AuthForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="border-2 border-[var(--color-neon-cyan)] glass-effect text-white placeholder:text-gray-400 focus:border-[var(--color-neon-lime)]"
+                className="border-2 border-black bg-white text-black placeholder:text-gray-400 focus:border-gray-600 rounded-xl h-12"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               />
             </div>
             {message && (
               <p
-                className={`text-sm ${message.includes("error") || message.includes("Invalid") ? "text-red-400" : "text-[var(--color-neon-lime)]"}`}
+                className={`text-sm ${message.includes("error") || message.includes("Invalid") ? "text-red-600" : "text-green-600"}`}
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {message}
               </p>
@@ -128,7 +131,8 @@ export function AuthForm() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[var(--color-neon-lime)] to-[var(--color-neon-pink)] text-black hover:shadow-lg hover:shadow-[var(--color-neon-pink)] border-2 border-[var(--color-neon-lime)] font-semibold"
+              className="w-full bg-black text-white hover:bg-gray-800 border-2 border-black rounded-xl h-12 font-bold text-base"
+              style={{ fontFamily: 'Satoshi, sans-serif' }}
             >
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
@@ -136,7 +140,8 @@ export function AuthForm() {
               type="button"
               variant="ghost"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="w-full border-2 border-[var(--color-neon-cyan)] text-[var(--color-neon-cyan)] hover:bg-[var(--color-neon-cyan)]/10 hover:border-[var(--color-neon-lime)]"
+              className="w-full border-2 border-black text-black hover:bg-gray-100 rounded-xl h-12"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
             </Button>
@@ -144,21 +149,22 @@ export function AuthForm() {
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
-        <p className="text-center text-xs text-[var(--color-neon-cyan)] font-semibold">DEMO ACCOUNTS</p>
+      <div className="space-y-3">
+        <p className="text-center text-sm text-black font-bold" style={{ fontFamily: 'Satoshi, sans-serif' }}>DEMO ACCOUNTS</p>
         <div className="grid grid-cols-3 gap-2">
           {demoLogins.map((demo, idx) => (
             <button
               key={idx}
               onClick={() => handleDemoLogin(demo.email, demo.password)}
               disabled={loading}
-              className="px-3 py-2 glass-effect border-2 border-[var(--color-neon-orange)] text-[var(--color-neon-orange)] hover:bg-[var(--color-neon-orange)]/20 hover:border-[var(--color-neon-lime)] rounded-lg transition-all text-xs font-semibold disabled:opacity-50"
+              className="px-3 py-2.5 bg-white border-2 border-black text-black hover:bg-black hover:text-white rounded-xl transition-all text-xs font-semibold disabled:opacity-50"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               Demo {idx + 1}
             </button>
           ))}
         </div>
-        <p className="text-center text-[10px] text-gray-500">Quick login for testing</p>
+        <p className="text-center text-xs text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>Quick login for testing</p>
       </div>
     </div>
   )
