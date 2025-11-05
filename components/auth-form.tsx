@@ -83,7 +83,7 @@ export function AuthForm() {
           <CardTitle className="text-3xl font-bold text-black" style={{ fontFamily: 'Satoshi, sans-serif' }}>
             {isSignUp ? "Create Account" : "Sign In"}
           </CardTitle>
-          <CardDescription className="text-gray-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <CardDescription className="text-black" style={{ fontFamily: 'Inter, sans-serif' }}>
             {isSignUp ? "Sign up to start networking with QR codes" : "Sign in to access your profile"}
           </CardDescription>
         </CardHeader>
@@ -100,7 +100,7 @@ export function AuthForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-2 border-black bg-white text-black placeholder:text-gray-400 focus:border-gray-600 rounded-xl h-12"
+                className="border-2 border-black bg-white text-black placeholder:text-black/40 focus:border-black rounded-xl h-12"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
             </div>
@@ -116,13 +116,13 @@ export function AuthForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="border-2 border-black bg-white text-black placeholder:text-gray-400 focus:border-gray-600 rounded-xl h-12"
+                className="border-2 border-black bg-white text-black placeholder:text-black/40 focus:border-black rounded-xl h-12"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
             </div>
             {message && (
               <p
-                className={`text-sm ${message.includes("error") || message.includes("Invalid") ? "text-red-600" : "text-green-600"}`}
+                className={`text-sm ${message.includes("error") || message.includes("Invalid") ? "text-black font-bold" : "text-black"}`}
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {message}
@@ -131,7 +131,7 @@ export function AuthForm() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-black text-white hover:bg-gray-800 border-2 border-black rounded-xl h-12 font-bold text-base"
+              className="w-full bg-black text-white hover:bg-black/80 border-2 border-black rounded-xl h-12 font-bold text-base"
               style={{ fontFamily: 'Satoshi, sans-serif' }}
             >
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
@@ -140,7 +140,7 @@ export function AuthForm() {
               type="button"
               variant="ghost"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="w-full border-2 border-black text-black hover:bg-gray-100 rounded-xl h-12"
+              className="w-full border-2 border-black text-black hover:bg-black/5 rounded-xl h-12"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
               {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
@@ -164,7 +164,7 @@ export function AuthForm() {
             </button>
           ))}
         </div>
-        <p className="text-center text-xs text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>Quick login for testing</p>
+        <p className="text-center text-xs text-black" style={{ fontFamily: 'Inter, sans-serif' }}>Quick login for testing</p>
       </div>
     </div>
   )
