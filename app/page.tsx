@@ -303,16 +303,12 @@ export default function LetsConnect() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="relative w-24 h-24 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--color-neon-lime)] border-r-[var(--color-neon-pink)] animate-spin"></div>
-            <div
-              className="absolute inset-4 rounded-full border-4 border-transparent border-b-[var(--color-neon-cyan)] animate-spin"
-              style={{ animationDirection: "reverse", animationDuration: "2s" }}
-            ></div>
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-4 border-black animate-spin"></div>
           </div>
-          <p className="text-[var(--color-neon-lime)] font-display text-xl neon-glow">Loading...</p>
+          <p className="text-black font-bold text-lg">Loading...</p>
         </div>
       </div>
     )
@@ -322,19 +318,19 @@ export default function LetsConnect() {
     return (
       <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center">
         <div className="max-w-md w-full text-center">
-          <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-black mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-black mb-3">Configuration Error</h1>
-          <p className="text-gray-700 mb-6">{initError}</p>
-          <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-4 text-left">
-            <p className="text-sm font-semibold text-gray-900 mb-2">Required Environment Variables:</p>
-            <ul className="text-xs text-gray-700 space-y-1 font-mono">
+          <p className="text-black mb-6">{initError}</p>
+          <div className="bg-white border-2 border-black rounded-xl p-4 text-left">
+            <p className="text-sm font-semibold text-black mb-2">Required Environment Variables:</p>
+            <ul className="text-xs text-black space-y-1 font-mono">
               <li>NEXT_PUBLIC_SUPABASE_URL</li>
               <li>NEXT_PUBLIC_SUPABASE_ANON_KEY</li>
             </ul>
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="mt-6 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors"
+            className="mt-6 px-6 py-3 bg-black text-white rounded-xl hover:bg-black/80 transition-colors"
           >
             Retry
           </button>
@@ -345,17 +341,12 @@ export default function LetsConnect() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-6 flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-radial from-[var(--color-neon-pink)] via-transparent to-transparent rounded-full blur-3xl opacity-20"></div>
-          <div className="absolute bottom-20 left-0 w-96 h-96 bg-gradient-radial from-[var(--color-neon-cyan)] via-transparent to-transparent rounded-full blur-3xl opacity-20"></div>
-        </div>
-
+      <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="text-center mb-8 relative z-10">
-          <h1 className="text-6xl font-display text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-neon-lime)] via-[var(--color-neon-pink)] to-[var(--color-neon-cyan)] mb-3 neon-glow">
+          <h1 className="text-4xl font-bold text-black mb-3">
             Let's Connect
           </h1>
-          <p className="text-[var(--color-neon-cyan)] text-lg font-light">Your social life, one scan away</p>
+          <p className="text-black text-lg">Your social life, one scan away</p>
         </div>
         <AuthForm />
       </div>
@@ -397,7 +388,7 @@ export default function LetsConnect() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{ gridAutoRows: "320px" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{ gridAutoRows: "1fr" }}>
             <NavCard
               icon={User}
               title="My Profile"

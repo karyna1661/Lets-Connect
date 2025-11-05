@@ -19,43 +19,43 @@ export function SocialOAuthConnect({ platform, currentValue, onConnect, disabled
     x: {
       name: "X (Twitter)",
       icon: Twitter,
-      color: "bg-black hover:bg-gray-800",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/twitter",
     },
     github: {
       name: "GitHub",
       icon: Github,
-      color: "bg-gray-900 hover:bg-gray-800",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/github",
     },
     linkedin: {
       name: "LinkedIn",
       icon: Linkedin,
-      color: "bg-blue-700 hover:bg-blue-800",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/linkedin",
     },
     farcaster: {
       name: "Farcaster",
       icon: Twitter,
-      color: "bg-purple-700 hover:bg-purple-800",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/farcaster",
     },
     instagram: {
       name: "Instagram",
       icon: Instagram,
-      color: "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/instagram",
     },
     tiktok: {
       name: "TikTok",
       icon: Twitter,
-      color: "bg-black hover:bg-gray-800",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/tiktok",
     },
     telegram: {
       name: "Telegram",
       icon: Twitter,
-      color: "bg-blue-500 hover:bg-blue-600",
+      color: "bg-black hover:bg-black/80",
       authUrl: "/api/auth/telegram",
     },
   }
@@ -119,18 +119,18 @@ export function SocialOAuthConnect({ platform, currentValue, onConnect, disabled
 
   return (
     <div className="flex items-center gap-2">
-      <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+      <Icon className="w-4 h-4 text-black flex-shrink-0" />
       
       {isConnected && currentValue ? (
         <div className="flex-1 flex items-center gap-2">
-          <div className="flex-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs flex items-center gap-2">
-            <Check className="w-3 h-3 text-green-400" />
+          <div className="flex-1 bg-white border border-black rounded-lg px-2 py-1.5 text-black text-xs flex items-center gap-2">
+            <Check className="w-3 h-3 text-black" />
             <span className="flex-1 truncate">{currentValue}</span>
           </div>
           <button
             onClick={handleDisconnect}
             disabled={disabled}
-            className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+            className="text-xs text-black hover:text-black/70 disabled:opacity-50"
           >
             Disconnect
           </button>
@@ -139,7 +139,7 @@ export function SocialOAuthConnect({ platform, currentValue, onConnect, disabled
         <button
           onClick={handleConnect}
           disabled={disabled || isConnecting}
-          className={`flex-1 ${config.color} text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2`}
+          className={`flex-1 ${config.color} text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2 border border-black`}
         >
           {isConnecting ? (
             <>
