@@ -23,10 +23,8 @@ export const metadata: Metadata = {
     title: "Let's Connect",
   },
   icons: {
-    icon: [
-      { url: "/icon-192.jpg", sizes: "192x192", type: "image/jpeg" },
-      { url: "/icon-512.jpg", sizes: "512x512", type: "image/jpeg" },
-    ],
+    icon: "/icon-192.jpg",
+    shortcut: "/icon-192.jpg",
     apple: "/icon-192.jpg",
   },
 }
