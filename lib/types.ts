@@ -1,18 +1,19 @@
 export interface Profile {
   id?: string
   user_id: string
-  name: string
+  name: string // maps to displayName
+  username?: string
   title?: string
   company?: string
   email?: string
   phone?: string
   linkedin?: string
-  twitter?: string
+  twitter?: string // maps to x
   instagram?: string
   bio?: string
-  profile_image?: string
+  profile_image?: string // maps to avatar
   qr_code?: string
-  city?: string
+  city?: string // maps to location
   role?: string
   interests?: string[]
   is_discoverable?: boolean
@@ -20,6 +21,17 @@ export interface Profile {
   wallet_hash?: string
   created_at?: string
   updated_at?: string
+  // New social fields from ConnectProfile
+  ens?: string
+  zora?: string
+  farcaster?: string
+  paragraph?: string
+  telegram?: string
+  substack?: string
+  github?: string
+  tiktok?: string
+  youtube?: string
+  x?: string // Twitter/X handle
 }
 
 export interface Connection {

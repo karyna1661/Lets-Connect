@@ -36,6 +36,10 @@ import { POAPSyncButton } from "@/components/poap-sync-button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
 import { SeedDemoButton } from "@/components/seed-demo-button"
+import { ConnectionCard } from "@/components/connection-card"
+import { ProfileCard } from "@/components/profile-card"
+import { NavCard } from "@/components/nav-card"
+import { QRCodeSVG } from "qrcode.react"
 
 const SocialIcons = {
   instagram: Instagram,
@@ -47,21 +51,6 @@ const SocialIcons = {
   website: Globe,
   email: Mail,
   farcaster: User,
-}
-
-const getSocialUrl = (platform, username) => {
-  const urls = {
-    instagram: `https://instagram.com/${username.replace("@", "")}`,
-    twitter: `https://twitter.com/${username.replace("@", "")}`,
-    linkedin: username.startsWith("http") ? username : `https://${username}`,
-    github: username.startsWith("http") ? username : `https://github.com/${username.replace("@", "")}`,
-    facebook: username.startsWith("http") ? username : `https://facebook.com/${username}`,
-    youtube: `https://youtube.com/${username}`,
-    website: username.startsWith("http") ? username : `https://${username}`,
-    email: `mailto:${username}`,
-    farcaster: `https://warpcast.com/${username.replace("@", "")}`,
-  }
-  return urls[platform] || username
 }
 
 export default function LetsConnect() {
@@ -89,6 +78,59 @@ export default function LetsConnect() {
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [initError, setInitError] = useState<string | null>(null)
+
+  // Helper functions
+  const getProfileCompletion = (profile: Profile): number => {
+    let completed = 0
+    let total = 5
+    if (profile.name?.trim()) completed++
+    if (profile.bio?.trim()) completed++
+    if (profile.email?.trim() || profile.linkedin?.trim() || profile.twitter?.trim() || profile.instagram?.trim()) completed++
+    if (profile.city?.trim()) completed++
+    if (profile.role && profile.role !== "Other") completed++
+    return Math.round((completed / total) * 100)
+  }
+
+  const getInitials = (name: string): string => {
+    return name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "?"
+  }
+
+  const getConnectionsPreview = (connections: Connection[], n = 2): Connection[] => {
+    return connections.slice(0, n)
+  }
+
+  const buildQrPayload = (profile: Profile): string => {
+    return JSON.stringify({
+      user_id: profile.user_id,
+      name: profile.name,
+      username: profile.username,
+      bio: profile.bio,
+      profile_image: profile.profile_image,
+      city: profile.city,
+      role: profile.role,
+      interests: profile.interests,
+      // Social links
+      email: profile.email,
+      x: profile.x,
+      instagram: profile.instagram,
+      linkedin: profile.linkedin,
+      github: profile.github,
+      youtube: profile.youtube,
+      tiktok: profile.tiktok,
+      telegram: profile.telegram,
+      // Web3 profiles
+      ens: profile.ens,
+      farcaster: profile.farcaster,
+      zora: profile.zora,
+      paragraph: profile.paragraph,
+      substack: profile.substack,
+    })
+  }
 
   let supabase: ReturnType<typeof getSupabaseBrowserClient> | null = null
   try {
@@ -322,39 +364,32 @@ export default function LetsConnect() {
 
   if (view === "home") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-black p-6 flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-1/4 w-80 h-80 bg-gradient-radial from-[var(--color-neon-lime)] via-transparent to-transparent rounded-full blur-3xl opacity-10"></div>
-          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-gradient-radial from-[var(--color-neon-pink)] via-transparent to-transparent rounded-full blur-3xl opacity-10"></div>
-        </div>
-
-        <div className="max-w-md w-full relative z-10">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <div className="text-center flex-1">
-              <h1 className="text-5xl font-display text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-neon-lime)] to-[var(--color-neon-pink)] mb-3 neon-glow">
-                Let's Connect
-              </h1>
-              <p className="text-[var(--color-neon-cyan)] text-lg">Your social life, one scan away</p>
+            <div>
+              <h1 className="text-5xl font-bold text-gray-900 mb-2">Let's Connect</h1>
+              <p className="text-gray-600 text-lg">Your social life, one scan away</p>
             </div>
             <div className="flex gap-2">
               {user && <SeedDemoButton userId={user.id} />}
               <button
                 onClick={handleSignOut}
-                className="p-3 hover:bg-white/10 rounded-full border-2 border-[var(--color-neon-pink)] hover:border-[var(--color-neon-lime)] transition-all glow-border"
+                className="p-3 hover:bg-gray-200 rounded-full transition-colors"
                 title="Sign Out"
               >
-                <LogOut className="w-5 h-5 text-[var(--color-neon-pink)]" />
+                <LogOut className="w-5 h-5 text-gray-700" />
               </button>
             </div>
           </div>
 
           {!profile.name && (
-            <div className="mb-6 p-4 glass-effect border-l-4 border-[var(--color-neon-orange)] rounded-xl">
+            <div className="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 rounded-xl">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-[var(--color-neon-orange)] mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-[var(--color-neon-lime)]">Complete your profile</p>
-                  <p className="text-xs text-[var(--color-neon-cyan)] mt-1">
+                  <p className="text-sm font-semibold text-orange-900">Complete your profile</p>
+                  <p className="text-xs text-orange-700 mt-1">
                     Add your name and social links to start networking
                   </p>
                 </div>
@@ -362,22 +397,51 @@ export default function LetsConnect() {
             </div>
           )}
 
-          <div className="space-y-4">
-            <button
-              onClick={() => setView("profile")}
-              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
-            >
-              <div className="flex items-center gap-4">
-                <User className="w-8 h-8 text-[var(--color-neon-lime)] group-hover:animate-hue" />
-                <div className="text-left">
-                  <div className="font-display text-lg text-[var(--color-neon-lime)] neon-glow">My Profile</div>
-                  <div className="text-sm text-[var(--color-neon-cyan)]">Setup your socials</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{ gridAutoRows: "320px" }}>
+            <NavCard
+              icon={User}
+              title="My Profile"
+              description="Setup your info"
+              backTitle="Edit Profile"
+              backDescription="Add your name, bio and socials"
+              ctaLabel="Edit Profile"
+              backExtra={
+                <div className="space-y-3">
+                  <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-white transition-all duration-300"
+                      style={{ width: `${getProfileCompletion(profile)}%` }}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <span className="text-xs text-gray-400">{getProfileCompletion(profile)}% complete</span>
+                  </div>
+                  {!profile.name && (
+                    <div className="px-3 py-1.5 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+                      <span className="text-xs text-orange-300">⚠ Missing name</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <Edit className="w-5 h-5 text-[var(--color-neon-pink)]" />
-            </button>
+              }
+              onClick={() => setView("profile")}
+            />
 
-            <button
+            <NavCard
+              icon={Heart}
+              title="Discover"
+              description="Swipe & match"
+              backTitle="Find Connections"
+              backDescription="Meet people attending the same event"
+              ctaLabel="Start Swiping"
+              backExtra={
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
+                      <User className="w-6 h-6 text-white/40" />
+                    </div>
+                  ))}
+                </div>
+              }
               onClick={() => {
                 if (!profile.name) {
                   toast.error("Please complete your profile first")
@@ -386,31 +450,46 @@ export default function LetsConnect() {
                 }
                 window.location.href = "/discover"
               }}
-              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
-            >
-              <div className="flex items-center gap-4">
-                <Heart className="w-8 h-8 text-[var(--color-neon-pink)] group-hover:animate-pulse" />
-                <div className="text-left">
-                  <div className="font-display text-lg text-[var(--color-neon-pink)] neon-glow">Discover</div>
-                  <div className="text-sm text-[var(--color-neon-cyan)]">Swipe & match</div>
-                </div>
-              </div>
-            </button>
+            />
 
-            <button
+            <NavCard
+              icon={Calendar}
+              title="Events"
+              description="Find attendees"
+              backTitle="Browse Events"
+              backDescription="See events around you and who's attending"
+              ctaLabel="Browse Events"
+              backExtra={
+                <div className="flex justify-center">
+                  <div className="px-4 py-2 bg-white/10 border border-white/20 rounded-full">
+                    <span className="text-xs text-white/80">Upcoming events</span>
+                  </div>
+                </div>
+              }
               onClick={() => (window.location.href = "/events")}
-              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
-            >
-              <div className="flex items-center gap-4">
-                <Calendar className="w-8 h-8 text-[var(--color-neon-cyan)] group-hover:animate-hue" />
-                <div className="text-left">
-                  <div className="font-display text-lg text-[var(--color-neon-cyan)] neon-glow">Events</div>
-                  <div className="text-sm text-[var(--color-neon-pink)]">Find attendees</div>
-                </div>
-              </div>
-            </button>
+            />
 
-            <button
+            <NavCard
+              icon={QrCode}
+              title="My QR Code"
+              description="Get scanned"
+              backTitle="Share Your QR"
+              backDescription="Show this to someone so they can connect"
+              ctaLabel="Show QR Code"
+              secondaryLabel="Copy Profile Link"
+              onSecondaryClick={() => {
+                if (typeof window !== "undefined") {
+                  navigator.clipboard.writeText(`${window.location.origin}/?profile=${profile.user_id}`)
+                  toast.success("Link copied to clipboard")
+                }
+              }}
+              backExtra={
+                <div className="flex justify-center">
+                  <div className="bg-white rounded-xl p-2">
+                    <QRCodeSVG value={buildQrPayload(profile)} size={64} level="H" includeMargin={false} />
+                  </div>
+                </div>
+              }
               onClick={() => {
                 if (!profile.name) {
                   toast.error("Please complete your profile first")
@@ -419,42 +498,62 @@ export default function LetsConnect() {
                 }
                 setView("qr")
               }}
-              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
-            >
-              <div className="flex items-center gap-4">
-                <QrCode className="w-8 h-8 text-[var(--color-neon-lime)] group-hover:animate-spin" />
-                <div className="text-left">
-                  <div className="font-display text-lg text-[var(--color-neon-lime)] neon-glow">My QR Code</div>
-                  <div className="text-sm text-[var(--color-neon-cyan)]">Show & get scanned</div>
-                </div>
-              </div>
-            </button>
+            />
 
-            <button
+            <NavCard
+              icon={Scan}
+              title="Scan Code"
+              description="Save connections"
+              backTitle="Scan QR Code"
+              backDescription="Scan a QR code to collect a profile"
+              ctaLabel="Open Scanner"
+              backExtra={
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-16 h-16 border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
+                    <Scan className="w-8 h-8 text-white/60" />
+                  </div>
+                  <span className="text-xs text-white/60">Open the scanner</span>
+                </div>
+              }
               onClick={() => setView("scan")}
-              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
-            >
-              <div className="flex items-center gap-4">
-                <Scan className="w-8 h-8 text-[var(--color-neon-orange)] group-hover:animate-bounce" />
-                <div className="text-left">
-                  <div className="font-display text-lg text-[var(--color-neon-orange)] neon-glow">Scan Code</div>
-                  <div className="text-sm text-[var(--color-neon-cyan)]">Save connections</div>
-                </div>
-              </div>
-            </button>
+            />
 
-            <button
-              onClick={() => setView("connections")}
-              className="w-full glass-effect rounded-2xl p-6 flex items-center justify-between hover:shadow-2xl transition-all duration-300 glow-border group"
-            >
-              <div className="flex items-center gap-4">
-                <Users className="w-8 h-8 text-[var(--color-neon-pink)] group-hover:animate-pulse" />
-                <div className="text-left">
-                  <div className="font-display text-lg text-[var(--color-neon-pink)] neon-glow">My Connections</div>
-                  <div className="text-sm text-[var(--color-neon-cyan)]">{connections.length} saved</div>
+            <NavCard
+              icon={Users}
+              title="My Connections"
+              description={`${connections.length} saved`}
+              backTitle="View Connections"
+              backDescription="View and manage saved contacts"
+              ctaLabel="View All"
+              secondaryLabel={connections.length > 0 ? "Export" : undefined}
+              onSecondaryClick={connections.length > 0 ? () => toast.info("Export coming soon") : undefined}
+              backExtra={
+                <div className="flex flex-col items-center gap-3">
+                  {connections.length > 0 ? (
+                    <>
+                      <div className="flex -space-x-3">
+                        {getConnectionsPreview(connections).map((conn, idx) => (
+                          <Avatar key={idx} className="w-12 h-12 border-2 border-gray-900">
+                            <AvatarImage src={conn.connection_data.profile_image || undefined} />
+                            <AvatarFallback className="bg-white text-black text-sm font-bold">
+                              {getInitials(conn.connection_data.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                      </div>
+                      <div className="px-3 py-1 bg-white/10 rounded-full">
+                        <span className="text-xs text-white/80">{connections.length} saved</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center">
+                      <span className="text-xs text-white/60">No connections yet</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </button>
+              }
+              onClick={() => setView("connections")}
+            />
           </div>
         </div>
       </div>
@@ -462,216 +561,55 @@ export default function LetsConnect() {
   }
 
   if (view === "profile") {
-    const currentProfile = editingProfile || profile
-    const roles = ["Builder", "Founder", "Investor", "Creator", "Other"]
-
     return (
-      <div className="min-h-screen bg-white p-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-black">Your Profile</h2>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setEditingProfile(null)
-                  setView("home")
-                }}
-                className="px-4 py-2 border-2 border-gray-300 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => saveProfile(currentProfile)}
-                disabled={isSavingProfile}
-                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50"
-              >
-                <Save className="w-5 h-5" />
-                {isSavingProfile ? "Saving..." : "Save"}
-              </button>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-1">Your Profile</h2>
+              <p className="text-gray-600">Tap card to edit your information</p>
             </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
-            <ProfilePhotoUpload
-              userId={user.id}
-              currentImageUrl={currentProfile.profile_image}
-              userName={currentProfile.name}
-              onUploadSuccess={(imageUrl) => {
-                const updatedProfile = { ...currentProfile, profile_image: imageUrl }
-                setEditingProfile(updatedProfile)
-                saveProfile(updatedProfile)
+            <button
+              onClick={() => {
+                setEditingProfile(null)
+                setView("home")
               }}
-            />
+              className="p-3 hover:bg-gray-200 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6 text-gray-700" />
+            </button>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Name <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                value={currentProfile.name}
-                onChange={(e) =>
-                  setEditingProfile({
-                    ...(editingProfile || profile),
-                    name: e.target.value,
-                  })
-                }
-                placeholder="Your full name"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
-              />
-            </div>
+          <ProfileCard
+            profile={profile}
+            userId={user.id}
+            onSave={async (updatedProfile) => {
+              await saveProfile(updatedProfile)
+            }}
+            isSaving={isSavingProfile}
+          />
 
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Bio</label>
-              <textarea
-                value={currentProfile.bio || ""}
-                onChange={(e) =>
-                  setEditingProfile({
-                    ...(editingProfile || profile),
-                    bio: e.target.value,
-                  })
-                }
-                placeholder="Tell people about yourself..."
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black h-24"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">City</label>
-                <input
-                  type="text"
-                  value={currentProfile.city || ""}
-                  onChange={(e) =>
-                    setEditingProfile({
-                      ...(editingProfile || profile),
-                      city: e.target.value,
-                    })
-                  }
-                  placeholder="Your city"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Role</label>
-                <select
-                  value={currentProfile.role || "Other"}
-                  onChange={(e) =>
-                    setEditingProfile({
-                      ...(editingProfile || profile),
-                      role: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
-                >
-                  {roles.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Interests (comma separated)</label>
-              <input
-                type="text"
-                value={(currentProfile.interests || []).join(", ")}
-                onChange={(e) =>
-                  setEditingProfile({
-                    ...(editingProfile || profile),
-                    interests: e.target.value
-                      .split(",")
-                      .map((i) => i.trim())
-                      .filter((i) => i),
-                  })
-                }
-                placeholder="e.g. Web3, AI, Design"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <label className="flex items-center gap-3 p-3 border-2 border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  checked={currentProfile.is_discoverable || true}
-                  onChange={(e) =>
-                    setEditingProfile({
-                      ...(editingProfile || profile),
-                      is_discoverable: e.target.checked,
-                    })
-                  }
-                  className="w-5 h-5 accent-black"
-                />
-                <span className="text-sm font-semibold text-gray-900">Show in Discovery</span>
-              </label>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Location Sharing</label>
-                <select
-                  value={currentProfile.location_sharing || "off"}
-                  onChange={(e) =>
-                    setEditingProfile({
-                      ...(editingProfile || profile),
-                      location_sharing: e.target.value as "off" | "city" | "precise",
-                    })
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black"
-                >
-                  <option value="off">Private</option>
-                  <option value="city">City Only</option>
-                  <option value="precise">Precise</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-black">
+          <div className="mt-6 bg-white rounded-3xl p-6 border border-gray-200/50"
+            style={{
+              boxShadow: `
+                0 0 0 1px rgba(0,0,0,0.04),
+                0 8px 24px rgba(0,0,0,0.06)
+              `,
+            }}
+          >
             <div className="flex items-center gap-3 mb-4">
-              <Zap className="w-6 h-6 text-black" />
-              <h3 className="text-xl font-bold text-black mb-4">POAP Sync</h3>
+              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">POAP Sync</h3>
+                <p className="text-xs text-gray-600">Connect your wallet</p>
+              </div>
             </div>
             <p className="text-sm text-gray-600 mb-4">
               Connect your Ethereum wallet to sync your POAP collection and unlock compatibility matching
             </p>
-            <POAPSyncButton userId={user.id} currentWallet={currentProfile.wallet_hash} />
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-black">
-            <h3 className="text-xl font-bold text-black mb-4">Social Links</h3>
-
-            <div className="space-y-3">
-              {[
-                { key: "instagram", label: "Instagram", placeholder: "@username" },
-                { key: "twitter", label: "Twitter/X", placeholder: "@username" },
-                { key: "linkedin", label: "LinkedIn", placeholder: "linkedin.com/in/username" },
-                { key: "github", label: "GitHub", placeholder: "github.com/username" },
-                { key: "facebook", label: "Facebook", placeholder: "facebook.com/username" },
-                { key: "youtube", label: "YouTube", placeholder: "@channel" },
-                { key: "website", label: "Website", placeholder: "yourwebsite.com" },
-                { key: "email", label: "Email", placeholder: "you@example.com" },
-              ].map((social) => (
-                <div key={social.key} className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={(currentProfile[social.key as keyof Profile] as string) || ""}
-                    onChange={(e) =>
-                      setEditingProfile({
-                        ...(editingProfile || profile),
-                        [social.key]: e.target.value,
-                      })
-                    }
-                    placeholder={social.placeholder}
-                    className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm"
-                  />
-                </div>
-              ))}
-            </div>
+            <POAPSyncButton userId={user.id} currentWallet={profile.wallet_hash} />
           </div>
         </div>
       </div>
@@ -730,145 +668,47 @@ export default function LetsConnect() {
 
   if (view === "connections") {
     return (
-      <div className="min-h-screen bg-white p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-black">My Connections</h2>
-            <button onClick={() => setView("home")} className="p-2 hover:bg-gray-200 rounded-full">
-              <X className="w-6 h-6" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-1">My Connections</h2>
+              <p className="text-gray-600">Tap cards to view and edit notes</p>
+            </div>
+            <button onClick={() => setView("home")} className="p-3 hover:bg-gray-200 rounded-full transition-colors">
+              <X className="w-6 h-6 text-gray-700" />
             </button>
           </div>
 
           {connections.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No connections yet</p>
-              <p className="text-gray-500 text-sm">Scan QR codes to save profiles</p>
+            <div className="text-center py-20">
+              <Users className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No connections yet</h3>
+              <p className="text-gray-600">Scan QR codes to save profiles and build your network</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {connections.map((conn) => {
-                const isEditingNote = editingNotes[conn.id!] !== undefined
-                const currentNotes = isEditingNote ? editingNotes[conn.id!] : conn.notes || ""
-
-                return (
-                  <div key={conn.id} className="bg-white rounded-2xl p-6 shadow-lg border-2 border-black">
-                    <div className="flex items-start gap-4 mb-4">
-                      <Avatar className="w-16 h-16 border-2 border-black">
-                        <AvatarImage
-                          src={conn.connection_data.profile_image || undefined}
-                          alt={conn.connection_data.name}
-                        />
-                        <AvatarFallback className="bg-gray-200 text-black font-bold">
-                          {conn.connection_data.name
-                            ?.split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase()
-                            .slice(0, 2) || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-xl font-bold text-black">{conn.connection_data.name}</h3>
-                            <p className="text-gray-700 text-sm">{conn.connection_data.bio}</p>
-                            <p className="text-gray-500 text-xs mt-1">
-                              Scanned {new Date(conn.created_at!).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Remove ${conn.connection_data.name} from connections?`)) {
-                                handleDeleteConnection(conn.id!, conn.connection_data.name)
-                              }
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-full"
-                          >
-                            <X className="w-5 h-5 text-gray-400" />
-                          </button>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {Object.entries(conn.connection_data)
-                            .filter(([key]) =>
-                              ["instagram", "twitter", "linkedin", "github", "email", "website"].includes(key),
-                            )
-                            .filter(([_, value]) => value)
-                            .map(([key, value]) => {
-                              const Icon = SocialIcons[key as keyof typeof SocialIcons]
-                              if (!Icon) return null
-                              return (
-                                <a
-                                  key={key}
-                                  href={
-                                    key === "email"
-                                      ? `mailto:${value}`
-                                      : (value as string).startsWith("http")
-                                        ? (value as string)
-                                        : `https://${value}`
-                                  }
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-full hover:bg-gray-800 transition-colors text-sm"
-                                >
-                                  <Icon className="w-3.5 h-3.5" />
-                                  <span className="font-medium">{key}</span>
-                                </a>
-                              )
-                            })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t-2 border-gray-200">
-                      <div className="flex items-start gap-2">
-                        <StickyNote className="w-5 h-5 text-gray-600 mt-2" />
-                        <div className="flex-1">
-                          <label className="block text-sm font-semibold text-gray-900 mb-2">Notes</label>
-                          <textarea
-                            value={currentNotes}
-                            onChange={(e) =>
-                              setEditingNotes((prev) => ({
-                                ...prev,
-                                [conn.id!]: e.target.value,
-                              }))
-                            }
-                            placeholder="Add notes about this connection..."
-                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black text-sm resize-none"
-                            rows={2}
-                          />
-                          {isEditingNote && (
-                            <div className="flex gap-2 mt-2">
-                              <button
-                                onClick={() => handleSaveNotes(conn.id!)}
-                                disabled={savingNotes[conn.id!]}
-                                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
-                              >
-                                <Save className="w-4 h-4" />
-                                {savingNotes[conn.id!] ? "Saving..." : "Save"}
-                              </button>
-                              <button
-                                onClick={() =>
-                                  setEditingNotes((prev) => {
-                                    const newState = { ...prev }
-                                    delete newState[conn.id!]
-                                    return newState
-                                  })
-                                }
-                                className="px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-sm"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {connections.map((conn) => (
+                <ConnectionCard
+                  key={conn.id}
+                  connection={conn}
+                  onDelete={handleDeleteConnection}
+                  onSaveNotes={async (connectionId, notes) => {
+                    try {
+                      setSavingNotes((prev) => ({ ...prev, [connectionId]: true }))
+                      await updateConnectionNotes(connectionId, notes)
+                      await loadData(user.id)
+                      toast.success("Notes saved successfully")
+                    } catch (error) {
+                      console.error("[v0] Error saving notes:", error)
+                      toast.error("Failed to save notes")
+                    } finally {
+                      setSavingNotes((prev) => ({ ...prev, [connectionId]: false }))
+                    }
+                  }}
+                  isSavingNotes={savingNotes[conn.id!]}
+                />
+              ))}
             </div>
           )}
         </div>

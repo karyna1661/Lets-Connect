@@ -26,13 +26,14 @@ export const metadata: Metadata = {
     icon: "/icon-192.jpg",
     apple: "/icon-192.jpg",
   },
+}
+
+export const viewport = {
   themeColor: "#000000",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
@@ -56,16 +57,15 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Temporarily disabled during development
+              console.log('[v0] Service worker disabled for development');
+              // Unregister any existing service workers
               if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(
-                    function(registration) {
-                      console.log('[v0] ServiceWorker registration successful');
-                    },
-                    function(err) {
-                      console.log('[v0] ServiceWorker registration failed: ', err);
-                    }
-                  );
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('[v0] Unregistered service worker');
+                  }
                 });
               }
             `,

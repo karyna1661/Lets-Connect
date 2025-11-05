@@ -1,9 +1,23 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Zen+Dots:wght@400&display=swap");
-
 @custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: 'Satoshi';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@1,900,700,500,301,701,300,501,401,901,400,2&display=swap') format('truetype');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2') format('woff2');
+}
 
 :root {
   --color-neon-lime: #77ff00;
@@ -55,8 +69,8 @@
 }
 
 @theme inline {
-  --font-sans: "Orbitron", sans-serif;
-  --font-display: "Zen Dots", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Satoshi", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -85,6 +99,17 @@
   body {
     background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
     @apply bg-background text-foreground font-sans;
+  }
+
+  /* Typography - Satoshi for headings, Inter for body */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Satoshi', sans-serif;
+    font-weight: 700;
+  }
+
+  p, small, span, div, a, button, input, textarea, select, label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
   }
 
   /* Add Frutiger Aero neon aesthetic with glowing effects */
