@@ -219,3 +219,38 @@ button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
     min-height: 220px;
   }
 }
+
+/* Mobile layout optimization for cards */
+@media (max-width: 1023px) {
+  /* Ensure grid columns work properly on mobile */
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Optimize card sizing for mobile */
+  .w-full {
+    width: 100%;
+  }
+  
+  /* Ensure proper spacing on mobile */
+  .gap-6 {
+    gap: 1rem;
+  }
+  
+  /* Make sure cards are touchable and visible */
+  .flip-card-button {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Desktop optimization */
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .gap-6 {
+    gap: 1.5rem;
+  }
+}
