@@ -81,7 +81,7 @@ export function ScanQRCard({ onScanSuccess, onScanError }: ScanQRCardProps) {
   )
 
   return (
-    <div className="w-full" style={{ height: "500px" }}>
+    <div className="w-full" style={{ height: "600px" }}>
       <FlipCard
         front={frontContent}
         back={backContent}

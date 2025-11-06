@@ -404,11 +404,6 @@ export default function LetsConnect() {
                     <div className="text-center">
                       <span className="text-xs text-gray-400">{getProfileCompletion(profile)}% complete</span>
                     </div>
-                    {!profile.name && (
-                      <div className="px-3 py-1.5 bg-orange-500/20 border border-orange-500/30 rounded-lg">
-                        <span className="text-xs text-orange-300">⚠ Missing name</span>
-                      </div>
-                    )}
                   </div>
                 }
                 onClick={() => setView("profile")}

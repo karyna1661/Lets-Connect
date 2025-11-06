@@ -212,7 +212,7 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
   )
 
   return (
-    <div className="w-full" style={{ height: "320px" }}>
+    <div className="w-full" style={{ height: "400px" }}>
       <FlipCard
         front={frontContent}
         back={backContent}

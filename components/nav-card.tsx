@@ -26,7 +26,7 @@ export function NavCard({ icon: Icon, title, description, backTitle, backDescrip
           0 8px 24px rgba(0,0,0,0.06),
           0 16px 48px rgba(0,0,0,0.04)
         `,
-        minHeight: '220px',
+        minHeight: '280px',
         touchAction: "manipulation",
         display: "flex",
         flexDirection: "column",
@@ -64,7 +64,7 @@ export function NavCard({ icon: Icon, title, description, backTitle, backDescrip
       style={{
         background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
         boxShadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)`,
-        minHeight: '220px',
+        minHeight: '280px',
       }}
     >
       {/* Noise texture overlay */}
