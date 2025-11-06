@@ -244,9 +244,38 @@ button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
   }
 }
 
+/* Desktop optimization - 3 cards per row */
 @media (min-width: 1024px) {
   .lg\:grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-auto-rows: 1fr !important;
+  }
+  
+  /* Ensure proper spacing */
+  .gap-6 {
+    gap: 1.5rem !important;
+  }
+  
+  /* Reset any mobile flex constraints */
+  .grid > div {
+    width: auto;
+    max-width: 100%;
+  }
+  
+  .grid > .w-full {
+    flex: initial;
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  /* Ensure cards maintain consistent height in grid */
+  .auto-rows-fr {
+    grid-auto-rows: 1fr !important;
+  }
+  
+  /* Ensure card containers use full grid cell */
+  .grid > div > div {
+    height: 100%;
   }
 }
 
@@ -325,29 +354,6 @@ button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
   .grid > .w-full {
     flex: 0 0 100%;
     min-width: 100%;
-    max-width: 100%;
-  }
-}
-
-/* Desktop optimization */
-@media (min-width: 1024px) {
-  .lg\:grid-cols-3 {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-  
-  .gap-6 {
-    gap: 1.5rem;
-  }
-  
-  /* Ensure proper grid layout on desktop */
-  .auto-rows-fr {
-    grid-auto-rows: 1fr;
-  }
-  
-  /* Remove mobile-specific constraints on desktop */
-  .grid > .w-full {
-    flex: initial;
-    min-width: initial;
     max-width: 100%;
   }
 }
