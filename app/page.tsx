@@ -384,7 +384,7 @@ export default function LetsConnect() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             <div className="w-full">
               <NavCard
                 icon={User}
@@ -465,13 +465,6 @@ export default function LetsConnect() {
                 backTitle="Share Your QR"
                 backDescription="Show this to someone so they can connect"
                 ctaLabel="Show QR Code"
-                secondaryLabel="Copy Profile Link"
-                onSecondaryClick={() => {
-                  if (typeof window !== "undefined") {
-                    navigator.clipboard.writeText(`${window.location.origin}/?profile=${profile.user_id}`)
-                    toast.success("Link copied to clipboard")
-                  }
-                }}
                 backExtra={
                   <div className="flex justify-center">
                     <div className="bg-white rounded-xl p-2">
