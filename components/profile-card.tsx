@@ -39,7 +39,8 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
 
   const frontContent = (
     <div
-      className="relative w-full bg-white rounded-3xl border-2 border-black h-full overflow-hidden p-6"
+      className="relative w-full bg-white rounded-3xl border-2 border-black h-full overflow-hidden p-6 cursor-pointer"
+      onClick={() => setIsFullScreen(true)}
       style={{
         boxShadow: `0 0 0 1px rgba(0,0,0,1), 0 8px 24px rgba(0,0,0,0.1)`
       }}
@@ -131,13 +132,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
   const backContent = (
     <div
       className="w-full rounded-3xl h-full flex flex-col relative overflow-hidden"
-      onClick={(e) => {
-        e.stopPropagation()
-        // Expand to full screen after flip animation completes
-        if (!isFullScreen) {
-          setTimeout(() => setIsFullScreen(true), 400)
-        }
-      }}
+      onClick={(e) => e.stopPropagation()}
       style={{
         background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
         boxShadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)`,
