@@ -129,7 +129,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
 
   const backContent = (
     <div
-      className="w-full rounded-3xl h-full p-6 flex flex-col relative overflow-y-auto"
+      className="w-full rounded-3xl h-full flex flex-col relative overflow-hidden"
       onClick={(e) => e.stopPropagation()}
       style={{
         background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
@@ -144,220 +144,268 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
         }}
       />
 
-      <div className="relative z-10 flex-1 flex flex-col">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shadow-lg">
+      {/* Scrollable content area */}
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 pt-6 pb-4 custom-scrollbar">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-b from-gray-900 to-transparent pb-4 -mt-6 pt-6 z-20">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg ring-2 ring-white/10">
             <User className="w-6 h-6 text-white" />
           </div>
           <div>
             <h3 className="text-white text-lg font-bold tracking-tight">Edit Profile</h3>
-            <p className="text-gray-400 text-xs">Update your information</p>
+            <p className="text-gray-400 text-xs">DevConnect 2025 Edition</p>
           </div>
         </div>
 
-        <div className="space-y-4 mb-4">
-        <div>
-          <ProfilePhotoUpload
-            userId={userId}
-            currentImageUrl={editedProfile.profile_image}
-            userName={editedProfile.name}
-            onUploadSuccess={(imageUrl) => {
-              handleChange({ profile_image: imageUrl })
-            }}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-400 mb-1.5">Name</label>
-          <input
-            type="text"
-            value={editedProfile.name || ""}
-            onChange={(e) => {
-              e.stopPropagation()
-              handleChange({ name: e.target.value })
-            }}
-            onClick={(e) => e.stopPropagation()}
-            placeholder="Your full name"
-            className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-gray-400 mb-1.5">Bio</label>
-          <textarea
-            value={editedProfile.bio || ""}
-            onChange={(e) => {
-              e.stopPropagation()
-              handleChange({ bio: e.target.value })
-            }}
-            onClick={(e) => e.stopPropagation()}
-            placeholder="Tell people about yourself..."
-            rows={3}
-            className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 resize-none"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1.5">City</label>
-            <input
-              type="text"
-              value={editedProfile.city || ""}
-              onChange={(e) => {
-                e.stopPropagation()
-                handleChange({ city: e.target.value })
+        {/* Form Fields */}
+        <div className="space-y-5">
+          {/* Profile Photo Section */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
+            <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider">Profile Photo</label>
+            <ProfilePhotoUpload
+              userId={userId}
+              currentImageUrl={editedProfile.profile_image}
+              userName={editedProfile.name}
+              onUploadSuccess={(imageUrl) => {
+                handleChange({ profile_image: imageUrl })
               }}
-              onClick={(e) => e.stopPropagation()}
-              placeholder="Your city"
-              className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1.5">Role</label>
-            <select
-              value={editedProfile.role || "Other"}
-              onChange={(e) => {
-                e.stopPropagation()
-                handleChange({ role: e.target.value })
-              }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-            >
-              {roles.map((role) => (
-                <option key={role} value={role} className="bg-gray-800 text-white">
-                  {role}
-                </option>
-              ))}
-            </select>
+          {/* Basic Info Section */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
+            <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+              <User className="w-3.5 h-3.5" />
+              Basic Information
+            </label>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5">Full Name *</label>
+                <input
+                  type="text"
+                  value={editedProfile.name || ""}
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    handleChange({ name: e.target.value })
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Enter your full name"
+                  className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5">Bio</label>
+                <textarea
+                  value={editedProfile.bio || ""}
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    handleChange({ bio: e.target.value })
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Tell the DevConnect community about yourself..."
+                  rows={3}
+                  className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={editedProfile.city || ""}
+                    onChange={(e) => {
+                      e.stopPropagation()
+                      handleChange({ city: e.target.value })
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Bangkok"
+                    className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1">
+                    <Briefcase className="w-3 h-3" />
+                    Role
+                  </label>
+                  <select
+                    value={editedProfile.role || "Other"}
+                    onChange={(e) => {
+                      e.stopPropagation()
+                      handleChange({ role: e.target.value })
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all appearance-none cursor-pointer"
+                  >
+                    {roles.map((role) => (
+                      <option key={role} value={role} className="bg-gray-800 text-white">
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1">
+                  <Heart className="w-3 h-3" />
+                  Interests
+                </label>
+                <input
+                  type="text"
+                  value={(editedProfile.interests || []).join(", ")}
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    handleChange({
+                      interests: e.target.value
+                        .split(",")
+                        .map((i) => i.trim())
+                        .filter((i) => i),
+                    })
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Web3, Ethereum, DeFi, ZK Proofs"
+                  className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">Separate with commas</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Social Links & Web3 Section */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
+            <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+              <Globe2 className="w-3.5 h-3.5" />
+              Social & Web3 Profiles
+            </label>
+            
+            <div className="space-y-4">
+              {/* OAuth-enabled platforms */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-purple-300 mb-2 flex items-center gap-1">
+                  <Zap className="w-3 h-3" />
+                  Verified OAuth Connections
+                </p>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  <SocialOAuthConnect
+                    platform="x"
+                    currentValue={editedProfile.x}
+                    onConnect={(username) => handleChange({ x: username })}
+                    disabled={isSaving}
+                  />
+
+                  <SocialOAuthConnect
+                    platform="github"
+                    currentValue={editedProfile.github}
+                    onConnect={(username) => handleChange({ github: username })}
+                    disabled={isSaving}
+                  />
+
+                  <SocialOAuthConnect
+                    platform="linkedin"
+                    currentValue={editedProfile.linkedin}
+                    onConnect={(username) => handleChange({ linkedin: username })}
+                    disabled={isSaving}
+                  />
+
+                  <SocialOAuthConnect
+                    platform="instagram"
+                    currentValue={editedProfile.instagram}
+                    onConnect={(username) => handleChange({ instagram: username })}
+                    disabled={isSaving}
+                  />
+
+                  <SocialOAuthConnect
+                    platform="tiktok"
+                    currentValue={editedProfile.tiktok}
+                    onConnect={(username) => handleChange({ tiktok: username })}
+                    disabled={isSaving}
+                  />
+
+                  <SocialOAuthConnect
+                    platform="telegram"
+                    currentValue={editedProfile.telegram}
+                    onConnect={(username) => handleChange({ telegram: username })}
+                    disabled={isSaving}
+                  />
+
+                  <SocialOAuthConnect
+                    platform="farcaster"
+                    currentValue={editedProfile.farcaster}
+                    onConnect={(username) => handleChange({ farcaster: username })}
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+
+              {/* Manual entry platforms */}
+              <div className="pt-3 border-t border-white/10">
+                <p className="text-xs font-medium text-gray-300 mb-3">Manual Entry</p>
+                <div className="space-y-2">
+                  {[
+                    { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
+                    { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
+                    { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
+                    { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
+                    { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
+                    { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
+                  ].map((social) => {
+                    const Icon = social.icon
+                    return (
+                      <div key={social.key} className="group">
+                        <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
+                        <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
+                          <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <input
+                            type="text"
+                            value={(editedProfile[social.key as keyof Profile] as string) || ""}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              handleChange({ [social.key]: e.target.value })
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            placeholder={social.placeholder}
+                            className="flex-1 bg-transparent border-none text-white text-xs placeholder:text-gray-600 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-400 mb-1.5">Interests (comma separated)</label>
-          <input
-            type="text"
-            value={(editedProfile.interests || []).join(", ")}
-            onChange={(e) => {
+      {/* Fixed Save Button */}
+      <div className="relative z-20 px-6 py-4 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent">
+        {hasChanges && (
+          <button
+            onClick={(e) => {
               e.stopPropagation()
-              handleChange({
-                interests: e.target.value
-                  .split(",")
-                  .map((i) => i.trim())
-                  .filter((i) => i),
-              })
+              handleSave()
             }}
-            onClick={(e) => e.stopPropagation()}
-            placeholder="e.g. Web3, AI, Design"
-            className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
-          />
-        </div>
-
-        <div className="pt-2 border-t border-white/10">
-          <label className="block text-xs font-semibold text-gray-400 mb-2">Social Links & Web3</label>
-          <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-            {/* OAuth-enabled platforms */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-300">Connect with OAuth (Verified)</label>
-              
-              <SocialOAuthConnect
-                platform="x"
-                currentValue={editedProfile.x}
-                onConnect={(username) => handleChange({ x: username })}
-                disabled={isSaving}
-              />
-
-              <SocialOAuthConnect
-                platform="github"
-                currentValue={editedProfile.github}
-                onConnect={(username) => handleChange({ github: username })}
-                disabled={isSaving}
-              />
-
-              <SocialOAuthConnect
-                platform="linkedin"
-                currentValue={editedProfile.linkedin}
-                onConnect={(username) => handleChange({ linkedin: username })}
-                disabled={isSaving}
-              />
-
-              <SocialOAuthConnect
-                platform="instagram"
-                currentValue={editedProfile.instagram}
-                onConnect={(username) => handleChange({ instagram: username })}
-                disabled={isSaving}
-              />
-
-              <SocialOAuthConnect
-                platform="tiktok"
-                currentValue={editedProfile.tiktok}
-                onConnect={(username) => handleChange({ tiktok: username })}
-                disabled={isSaving}
-              />
-
-              <SocialOAuthConnect
-                platform="telegram"
-                currentValue={editedProfile.telegram}
-                onConnect={(username) => handleChange({ telegram: username })}
-                disabled={isSaving}
-              />
-
-              <SocialOAuthConnect
-                platform="farcaster"
-                currentValue={editedProfile.farcaster}
-                onConnect={(username) => handleChange({ farcaster: username })}
-                disabled={isSaving}
-              />
-            </div>
-
-            {/* Manual entry platforms */}
-            <div className="pt-2 border-t border-white/10">
-              <label className="block text-xs font-medium text-gray-300 mb-2">Manual Entry (Web3 & Others)</label>
-              {[
-                { key: "youtube", icon: Youtube, placeholder: "Channel URL", label: "YouTube" },
-                { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
-                { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS" },
-                { key: "zora", icon: Globe2, placeholder: "zora.co/username", label: "Zora" },
-                { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
-                { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
-              ].map((social) => {
-                const Icon = social.icon
-                return (
-                  <div key={social.key} className="flex items-center gap-2 mb-2">
-                    <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                    <input
-                      type="text"
-                      value={(editedProfile[social.key as keyof Profile] as string) || ""}
-                      onChange={(e) => {
-                        e.stopPropagation()
-                        handleChange({ [social.key]: e.target.value })
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                      placeholder={`${social.label}: ${social.placeholder}`}
-                      className="flex-1 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-white/50"
-                    />
-                  </div>
-                )
-              })}
-            </div>
+            disabled={isSaving}
+            className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 ring-2 ring-white/10 hover:ring-white/20 flip-card-button"
+          >
+            <Save className="w-5 h-5" />
+            {isSaving ? "Saving Changes..." : "Save Profile"}
+          </button>
+        )}
+        {!hasChanges && (
+          <div className="w-full py-3.5 bg-white/5 border border-white/10 text-gray-400 rounded-2xl font-medium flex items-center justify-center gap-2">
+            <span className="text-sm">✓ All changes saved</span>
           </div>
-        </div>
+        )}
       </div>
-      </div>
-
-      {hasChanges && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            handleSave()
-          }}
-          disabled={isSaving}
-          className="w-full py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg flip-card-button"
-        >
-          <Save className="w-5 h-5" />
-          {isSaving ? "Saving..." : "Save Profile"}
-        </button>
-      )}
     </div>
   )
 
