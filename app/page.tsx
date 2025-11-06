@@ -35,7 +35,6 @@ import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
 import { POAPSyncButton } from "@/components/poap-sync-button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
-import { SeedDemoButton } from "@/components/seed-demo-button"
 import { ConnectionCard } from "@/components/connection-card"
 import { ProfileCard } from "@/components/profile-card"
 import { NavCard } from "@/components/nav-card"
@@ -367,21 +366,19 @@ export default function LetsConnect() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-2">Let's Connect</h1>
-              <p className="text-gray-600 text-lg">Your social life, one scan away</p>
+          <div className="flex items-center justify-between mb-8 gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-2 truncate">Let's Connect</h1>
+              <p className="text-gray-600 text-sm sm:text-lg">Your social life, one scan away</p>
             </div>
-            <div className="flex gap-2">
-              {privyUser && <SeedDemoButton userId={privyUser.id} />}
-              <button
-                onClick={handleSignOut}
-                className="p-3 hover:bg-gray-200 rounded-full transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="w-5 h-5 text-gray-700" />
-              </button>
-            </div>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-semibold shadow-md text-sm whitespace-nowrap flex-shrink-0"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden xs:inline sm:inline">Sign Out</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-fr">
