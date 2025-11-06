@@ -129,19 +129,33 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
 
   const backContent = (
     <div
-      className="w-full rounded-3xl h-full p-6 flex flex-col relative overflow-y-auto border-2 border-black bg-white"
+      className="w-full rounded-3xl h-full p-6 flex flex-col relative overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
+      style={{
+        background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)`,
+      }}
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
-            <User className="w-5 h-5 text-white" />
-          </div>
-          <h3 className="text-black text-lg font-bold">Edit Profile</h3>
-        </div>
-      </div>
+      {/* Noise texture overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+        }}
+      />
 
-      <div className="flex-1 space-y-4 mb-4">
+      <div className="relative z-10 flex-1 flex flex-col">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shadow-lg">
+            <User className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white text-lg font-bold tracking-tight">Edit Profile</h3>
+            <p className="text-gray-400 text-xs">Update your information</p>
+          </div>
+        </div>
+
+        <div className="space-y-4 mb-4">
         <div>
           <ProfilePhotoUpload
             userId={userId}
@@ -164,7 +178,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
             }}
             onClick={(e) => e.stopPropagation()}
             placeholder="Your full name"
-            className="w-full bg-white border border-black rounded-xl px-3 py-2 text-black text-sm placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
           />
         </div>
 
@@ -179,7 +193,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
             onClick={(e) => e.stopPropagation()}
             placeholder="Tell people about yourself..."
             rows={3}
-            className="w-full bg-white border border-black rounded-xl px-3 py-2 text-black text-sm placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black resize-none"
+            className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 resize-none"
           />
         </div>
 
@@ -195,7 +209,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
               }}
               onClick={(e) => e.stopPropagation()}
               placeholder="Your city"
-              className="w-full bg-white border border-black rounded-xl px-3 py-2 text-black text-sm placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
             />
           </div>
 
@@ -208,10 +222,10 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
                 handleChange({ role: e.target.value })
               }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full bg-white border border-black rounded-xl px-3 py-2 text-black text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
             >
               {roles.map((role) => (
-                <option key={role} value={role} className="bg-white text-black">
+                <option key={role} value={role} className="bg-gray-800 text-white">
                   {role}
                 </option>
               ))}
@@ -235,7 +249,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
             }}
             onClick={(e) => e.stopPropagation()}
             placeholder="e.g. Web3, AI, Design"
-            className="w-full bg-white border border-black rounded-xl px-3 py-2 text-black text-sm placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
           />
         </div>
 
@@ -328,6 +342,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {hasChanges && (

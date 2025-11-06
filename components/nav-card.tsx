@@ -60,57 +60,63 @@ export function NavCard({ icon: Icon, title, description, backTitle, backDescrip
 
   const backContent = (
     <div
-      className="w-full h-full rounded-3xl p-6 flex flex-col justify-between items-center text-center overflow-hidden"
+      className="w-full h-full rounded-3xl p-6 flex flex-col relative overflow-hidden"
       style={{
         background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
-        boxSizing: "border-box",
         boxShadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)`,
         minHeight: '220px',
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        height: "100%",
-        position: "relative",
-        zIndex: 2,
       }}
     >
-      <div className="flex-shrink-0">
-        <div className="w-12 h-12 rounded-xl bg-black flex items-center justify-center shadow-lg mb-3">
-          <Icon className="w-6 h-6 text-white" />
+      {/* Noise texture overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`,
+        }}
+      />
+
+      <div className="relative z-10 flex-1 flex flex-col">
+        {/* Icon and title section */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shadow-lg">
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-white text-lg font-bold tracking-tight">{backTitle || title}</h3>
+            <p className="text-gray-400 text-xs">{backDescription || description}</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 flex flex-col justify-center items-center w-full px-2">
-        <h3 className="text-lg font-bold text-white mb-2 leading-tight">{backTitle || title}</h3>
-        <p className="text-gray-300 text-xs mb-4 max-w-[200px] leading-relaxed">{backDescription || description}</p>
+        {/* Extra content */}
+        {backExtra && <div className="flex-1 mb-4">{backExtra}</div>}
 
-        {backExtra && <div className="mb-4 w-full max-w-[220px]">{backExtra}</div>}
-      </div>
+        {/* Spacer if no extra content */}
+        {!backExtra && <div className="flex-1" />}
 
-      <div className="flex-shrink-0 w-full max-w-[220px] space-y-3">
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onClick()
-          }}
-          className="px-6 py-3 bg-white text-black rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg w-full text-sm touch-manipulation flip-card-button transform hover:scale-105 transition-transform"
-          style={{ touchAction: "manipulation" }}
-        >
-          {ctaLabel}
-        </button>
-
-        {secondaryLabel && onSecondaryClick && (
+        {/* Action buttons */}
+        <div className="space-y-3">
           <button
             onClick={(e) => {
               e.stopPropagation()
-              onSecondaryClick()
+              onClick()
             }}
-            className="px-4 py-2.5 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all border border-white/30 w-full text-sm touch-manipulation flip-card-button transform hover:scale-105 transition-transform"
-            style={{ touchAction: "manipulation" }}
+            className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2 flip-card-button"
           >
-            {secondaryLabel}
+            {ctaLabel}
           </button>
-        )}
+
+          {secondaryLabel && onSecondaryClick && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onSecondaryClick()
+              }}
+              className="w-full py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium hover:bg-white/20 transition-all border border-white/30 flip-card-button"
+            >
+              {secondaryLabel}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
