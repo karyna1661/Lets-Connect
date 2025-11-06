@@ -110,6 +110,41 @@ button, .cursor-pointer {
   min-width: 44px;
 }
 
+/* Mobile card container - preserve all card styling */
+@media (max-width: 1023px) {
+  /* Ensure cards maintain their visual identity */
+  .rounded-3xl {
+    border-radius: 1.5rem;
+  }
+  
+  /* Preserve padding inside cards */
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  /* Maintain text sizing for readability */
+  .text-xl {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  /* Keep icon sizes appropriate */
+  .w-16.h-16 {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  
+  .w-8.h-8 {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
 /* Ensure buttons in flip cards are always clickable */
 .flip-card-button {
   z-index: 10;
@@ -185,6 +220,24 @@ button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
   grid-template-columns: 1fr;
 }
 
+/* Mobile: single column with consistent card sizing */
+@media (max-width: 1023px) {
+  .grid-cols-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Ensure all cards have the same width */
+  .grid > div {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Prevent cards from having different heights */
+  .auto-rows-fr {
+    grid-auto-rows: minmax(280px, auto);
+  }
+}
+
 @media (min-width: 640px) {
   .sm\:grid-cols-2 {
     grid-template-columns: repeat(2, 1fr);
@@ -210,37 +263,69 @@ button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
     padding-right: 1rem;
   }
   
-  .p-6 {
-    padding: 1rem;
+  /* Ensure cards maintain full visual design on mobile */
+  .flip-card-container {
+    min-height: 280px;
   }
   
-  /* Ensure cards don't get cut off on mobile */
-  .flip-card-container {
-    min-height: 220px;
+  /* Preserve card shadows and borders on mobile */
+  .rounded-3xl {
+    border-radius: 1.5rem !important;
+  }
+  
+  /* Ensure gradient backgrounds render properly */
+  .bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)) !important;
+  }
+  
+  /* Maintain consistent card width */
+  .grid > div {
+    width: 100%;
   }
 }
 
 /* Mobile layout optimization for cards */
 @media (max-width: 1023px) {
-  /* Ensure grid columns work properly on mobile */
-  .grid-cols-2 {
-    grid-template-columns: repeat(2, 1fr);
+  /* Single column layout */
+  .grid-cols-1 {
+    grid-template-columns: 1fr !important;
   }
   
-  /* Optimize card sizing for mobile */
+  /* Ensure all cards have identical width */
   .w-full {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
-  /* Ensure proper spacing on mobile */
+  /* Consistent spacing between cards */
   .gap-6 {
     gap: 1rem;
   }
   
-  /* Make sure cards are touchable and visible */
+  /* Ensure buttons remain fully visible and styled */
   .flip-card-button {
     min-height: 44px;
     padding: 0.75rem 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  /* Preserve card borders on mobile */
+  .border,
+  .border-2,
+  .border-gray-200\/50 {
+    border-style: solid !important;
+  }
+  
+  /* Maintain card shadows on mobile - same as desktop */
+  [style*="boxShadow"] {
+    box-shadow: inherit !important;
+  }
+  
+  /* Prevent inconsistent card sizing */
+  .grid > .w-full {
+    flex: 0 0 100%;
+    min-width: 100%;
+    max-width: 100%;
   }
 }
 
