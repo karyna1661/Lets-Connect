@@ -144,8 +144,13 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
         }}
       />
 
-      {/* Scrollable content area */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 pt-6 pb-4 custom-scrollbar">
+      {/* Scrollable content area - no nested scrollbar */}
+      <div className="relative z-10 flex-1 px-6 pt-6 pb-4" style={{ overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         {/* Header */}
         <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-b from-gray-900 to-transparent pb-4 -mt-6 pt-6 z-20">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg ring-2 ring-white/10">
@@ -153,7 +158,6 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
           </div>
           <div>
             <h3 className="text-white text-lg font-bold tracking-tight">Edit Profile</h3>
-            <p className="text-gray-400 text-xs">DevConnect 2025 Edition</p>
           </div>
         </div>
 
