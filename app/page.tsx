@@ -384,20 +384,6 @@ export default function LetsConnect() {
             </div>
           </div>
 
-          {!profile.name && (
-            <div className="mb-6 p-4 bg-orange-50 border-l-4 border-orange-500 rounded-xl">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-orange-900">Complete your profile</p>
-                  <p className="text-xs text-orange-700 mt-1">
-                    Add your name and social links to start networking
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             <div className="w-full">
               <NavCard

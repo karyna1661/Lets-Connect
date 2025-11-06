@@ -57,7 +57,7 @@ export function QRCard({ profile, onDownload }: QRCardProps) {
 
       <div className="relative z-10 flex-1 flex flex-col">
         {/* Icon and title section */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shadow-lg">
             <QrCode className="w-6 h-6 text-white" />
           </div>
@@ -68,15 +68,15 @@ export function QRCard({ profile, onDownload }: QRCardProps) {
         </div>
 
         {/* QR Code Display */}
-        <div className="flex-1 flex items-center justify-center mb-6">
+        <div className="flex-1 flex items-center justify-center mb-4">
           <QRCodeDisplay profile={profile} />
         </div>
 
         {/* Profile name below QR */}
         {profile.name && (
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <div className="text-xl font-bold text-white">{profile.name}</div>
-            {profile.bio && <div className="text-gray-400 text-sm">{profile.bio}</div>}
+            {profile.bio && <div className="text-gray-400 text-sm line-clamp-1">{profile.bio}</div>}
           </div>
         )}
 

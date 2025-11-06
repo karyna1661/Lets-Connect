@@ -57,7 +57,7 @@ export function ScanQRCard({ onScanSuccess, onScanError }: ScanQRCardProps) {
 
       <div className="relative z-10 flex-1 flex flex-col">
         {/* Icon and title section */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shadow-lg">
             <Camera className="w-6 h-6 text-white" />
           </div>
@@ -68,7 +68,7 @@ export function ScanQRCard({ onScanSuccess, onScanError }: ScanQRCardProps) {
         </div>
 
         {/* QR Scanner */}
-        <div className="flex-1 flex items-center justify-center mb-4">
+        <div className="flex-1 flex items-center justify-center mb-6">
           <QRScanner onScanSuccess={onScanSuccess} onScanError={onScanError} />
         </div>
 

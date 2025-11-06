@@ -362,7 +362,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
   )
 
   return (
-    <div className="w-full" style={{ height: "500px" }}>
+    <div className="w-full" style={{ height: "600px" }}>
       <FlipCard
         front={frontContent}
         back={backContent}
