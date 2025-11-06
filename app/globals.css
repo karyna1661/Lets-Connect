@@ -1,217 +1,221 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@font-face {
-  font-family: 'Satoshi';
-  font-style: normal;
-  font-weight: 300 900;
-  font-display: swap;
-  src: url('https://api.fontshare.com/v2/css?f[]=satoshi@1,900,700,500,301,701,300,501,401,901,400,2&display=swap') format('truetype');
-}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 220 91% 54%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 220 91% 54%;
+    --radius: 0.5rem;
+  }
 
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2') format('woff2');
-}
-
-:root {
-  --color-neon-lime: #77ff00;
-  --color-neon-pink: #ff72b9;
-  --color-neon-cyan: #00e7ff;
-  --color-neon-purple: #ff81ff;
-  --color-neon-orange: #ff841d;
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: #1a1a2e;
-  --card-foreground: #ffffff;
-  --border: #2a2a4e;
-  --radius: 0.625rem;
-}
-
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
-}
-
-@theme inline {
-  --font-sans: "Inter", sans-serif;
-  --font-display: "Satoshi", sans-serif;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 220 91% 54%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 220 91% 54%;
+  }
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-    overflow-x: hidden;
-  }
-
-  body {
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #0a0a0a 100%);
-    @apply bg-background text-foreground font-sans;
-  }
-
-  /* Typography - Satoshi for headings, Inter for body */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Satoshi', sans-serif;
-    font-weight: 700;
-  }
-
-  p, small, span, div, a, button, input, textarea, select, label {
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-  }
-
-  /* Add Frutiger Aero neon aesthetic with glowing effects */
-  .neon-glow {
-    text-shadow: 0 0 10px var(--color-neon-lime), 0 0 20px var(--color-neon-pink), 0 0 30px var(--color-neon-cyan);
-  }
-
-  .glow-border {
-    border: 2px solid transparent;
-    background: linear-gradient(#1a1a2e, #1a1a2e) padding-box,
-      linear-gradient(135deg, var(--color-neon-lime), var(--color-neon-pink), var(--color-neon-cyan)) border-box;
-    box-shadow: 0 0 20px rgba(119, 255, 0, 0.3), 0 0 40px rgba(255, 114, 185, 0.2);
-  }
-
-  .glass-effect {
-    background: rgba(26, 26, 46, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .radial-glow {
-    position: relative;
-  }
-
-  .radial-glow::before {
-    content: "";
-    position: absolute;
-    inset: -100%;
-    background: radial-gradient(circle at 30% 30%, rgba(119, 255, 0, 0.3), rgba(255, 114, 185, 0.2), transparent);
-    border-radius: 50%;
-    z-index: -1;
-    filter: blur(40px);
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  @keyframes pulse-glow {
-    0%,
-    100% {
-      opacity: 0.5;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-  }
-
-  @keyframes hue-shift {
-    0% {
-      filter: hue-rotate(0deg);
-    }
-    100% {
-      filter: hue-rotate(360deg);
-    }
-  }
-
-  .animate-hue {
-    animation: hue-shift 4s linear infinite;
-  }
-
-  /* Added 3D flip animation keyframes */
-  @keyframes cardFlip {
-    0% {
-      transform: rotateY(0deg);
-    }
-    50% {
-      transform: rotateY(90deg);
-    }
-    100% {
-      transform: rotateY(180deg);
-    }
-  }
-
-  .flip-card-container {
-    perspective: 1000px;
-    cursor: pointer;
-  }
-
-  .flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    transform-style: preserve-3d;
-  }
-
-  .flip-card-front,
-  .flip-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .flip-card-back {
-    transform: rotateY(180deg);
-  }
-
-  /* removed invalid outline-ring/50 class */
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+}
+
+/* 3D Flip Card Styles */
+.perspective-1000 {
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Ensure proper centering in flip cards */
+.flip-card-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.flip-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile touch optimizations */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improved mobile tap targets */
+button, .cursor-pointer {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Ensure buttons in flip cards are always clickable */
+.flip-card-button {
+  z-index: 10;
+  position: relative;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.flip-card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.flip-card-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Button styles for all flip card buttons */
+button.flex.items-center.justify-center.gap-2.px-4.py-3 {
+  z-index: 10;
+  position: relative;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  min-height: 44px;
+  min-width: 44px;
+  transition: all 0.2s ease-out;
+}
+
+button.flex.items-center.justify-center.gap-2.px-4.py-3:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Smooth animations for mobile */
+@media (prefers-reduced-motion: no-preference) {
+  .transition-transform {
+    transition: transform 0.3s ease-out;
+  }
+  
+  .transition-opacity {
+    transition: opacity 0.3s ease-out;
+  }
+}
+
+/* Prevent text selection on mobile during flip animations */
+.flip-card-content {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Grid layout fixes */
+.grid {
+  display: grid;
+}
+
+.auto-rows-fr {
+  grid-auto-rows: 1fr;
+}
+
+/* Responsive grid for cards */
+.grid-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Gap utilities */
+.gap-6 {
+  gap: 1.5rem;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 767px) {
+  .max-w-6xl {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  /* Ensure cards don't get cut off on mobile */
+  .flip-card-container {
+    min-height: 220px;
   }
 }

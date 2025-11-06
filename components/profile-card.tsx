@@ -337,7 +337,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
             handleSave()
           }}
           disabled={isSaving}
-          className="w-full py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+          className="w-full py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg flip-card-button"
         >
           <Save className="w-5 h-5" />
           {isSaving ? "Saving..." : "Save Profile"}

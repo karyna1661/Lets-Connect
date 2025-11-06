@@ -190,7 +190,7 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
         <button
           onClick={() => handleSwipe("left")}
           disabled={isLoading || isAnimating}
-          className="group relative overflow-hidden flex items-center justify-center gap-2 px-4 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-2xl hover:bg-white/20 active:scale-95 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative overflow-hidden flex items-center justify-center gap-2 px-4 py-4 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-2xl hover:bg-white/20 active:scale-95 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flip-card-button"
           style={{
             boxShadow: `
               0 4px 16px rgba(0,0,0,0.2),
@@ -205,7 +205,7 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
         <button
           onClick={() => handleSwipe("right")}
           disabled={isLoading || isAnimating}
-          className="group relative overflow-hidden flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-pink-500 to-rose-600 text-white border border-pink-400/30 rounded-2xl hover:from-pink-600 hover:to-rose-700 active:scale-95 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group relative overflow-hidden flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-pink-500 to-rose-600 text-white border border-pink-400/30 rounded-2xl hover:from-pink-600 hover:to-rose-700 active:scale-95 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flip-card-button"
           style={{
             boxShadow: `
               0 4px 16px rgba(236, 72, 153, 0.4),

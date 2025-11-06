@@ -207,11 +207,11 @@ export default function FlipCardDemo() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 relative z-10">
-                <button className="flex items-center justify-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-2xl hover:bg-white/20 transition-all font-semibold">
+                <button className="flex items-center justify-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 rounded-2xl hover:bg-white/20 transition-all font-semibold flip-card-button">
                   ✕ Pass
                 </button>
                 <button 
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-pink-500 to-rose-600 text-white border border-pink-400/30 rounded-2xl hover:from-pink-600 hover:to-rose-700 transition-all font-semibold"
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-pink-500 to-rose-600 text-white border border-pink-400/30 rounded-2xl hover:from-pink-600 hover:to-rose-700 transition-all font-semibold flip-card-button"
                   style={{
                     boxShadow: `0 4px 16px rgba(236, 72, 153, 0.4), 0 8px 32px rgba(236, 72, 153, 0.2)`,
                   }}

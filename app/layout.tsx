@@ -1,16 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
 import { Toaster } from "sonner"
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-})
 
 export const metadata: Metadata = {
   title: "Let's Connect",
@@ -51,10 +43,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Let's Connect" />
       </head>
-      <body className={`font-sans ${inter.variable}`}>
+      <body>
         <Suspense fallback={null}>{children}</Suspense>
         <Toaster position="top-center" richColors closeButton />
-        <Analytics />
         <script
           dangerouslySetInnerHTML={{
             __html: `

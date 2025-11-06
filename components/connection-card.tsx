@@ -69,7 +69,7 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
             onDelete(connection.id!, connection.connection_data.name)
           }
         }}
-        className="absolute top-4 right-4 z-20 p-2 bg-white/90 hover:bg-red-50 rounded-full shadow-md transition-colors"
+        className="absolute top-4 right-4 z-20 p-2 bg-white/90 hover:bg-red-50 rounded-full shadow-md transition-colors flip-card-button"
       >
         <X className="w-5 h-5 text-gray-600 hover:text-red-600" />
       </button>
@@ -195,7 +195,7 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
               handleSave()
             }}
             disabled={isSavingNotes}
-            className="w-full py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+            className="w-full py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg flip-card-button"
           >
             <Save className="w-5 h-5" />
             {isSavingNotes ? "Saving..." : "Save Notes"}

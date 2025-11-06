@@ -32,16 +32,15 @@ export function FlipCard({
   }
 
   const handleMouseDown = () => {
-    console.log('[FlipCard] Mouse down detected')
     setIsPressed(true)
   }
   
-  const handleMouseUp = () => {
-    console.log('[FlipCard] Mouse up - triggering flip')
-    console.log('[FlipCard] Current state:', { isFlipped, isPressed })
-    setIsPressed(false)
-    setIsFlipped(!isFlipped)
-    console.log('[FlipCard] New flip state:', !isFlipped)
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // Only flip if not clicking on a button
+    if (!(e.target as HTMLElement).closest('button')) {
+      setIsPressed(false)
+      setIsFlipped(!isFlipped)
+    }
   }
 
   // Enhanced shadow system with multiple layers
@@ -81,7 +80,6 @@ export function FlipCard({
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={() => {
-        console.log('[FlipCard] Mouse leave')
         setIsPressed(false)
       }}
       style={{
@@ -89,12 +87,6 @@ export function FlipCard({
         WebkitTapHighlightColor: "transparent",
       }}
     >
-      {/* Debug indicator */}
-      {isFlipped && (
-        <div className="absolute top-2 right-2 z-50 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-          FLIPPED
-        </div>
-      )}
       <div
         className="relative w-full h-full transition-all"
         style={{
@@ -112,11 +104,10 @@ export function FlipCard({
       >
         {/* Front face */}
         <div
-          className="absolute w-full h-full rounded-3xl overflow-hidden"
+          className="absolute w-full h-full rounded-3xl overflow-hidden flex items-center justify-center"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            display: isFlipped ? 'none' : 'block',
             zIndex: isFlipped ? 1 : 2,
           }}
           data-side="front"
@@ -134,17 +125,18 @@ export function FlipCard({
               }}
             />
           )}
-          {front}
+          <div className="w-full h-full flex items-center justify-center">
+            {front}
+          </div>
         </div>
 
         {/* Back face */}
         <div
-          className="absolute w-full h-full rounded-3xl overflow-hidden"
+          className="absolute w-full h-full rounded-3xl overflow-hidden flex items-center justify-center"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             transform: "rotateY(180deg)",
-            display: isFlipped ? 'block' : 'none',
             zIndex: isFlipped ? 2 : 1,
           }}
           data-side="back"
@@ -162,7 +154,9 @@ export function FlipCard({
               }}
             />
           )}
-          {back}
+          <div className="w-full h-full flex items-center justify-center">
+            {back}
+          </div>
         </div>
       </div>
     </div>

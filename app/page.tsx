@@ -388,163 +388,175 @@ export default function LetsConnect() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{ gridAutoRows: "1fr" }}>
-            <NavCard
-              icon={User}
-              title="My Profile"
-              description="Setup your info"
-              backTitle="Edit Profile"
-              backDescription="Add your name, bio and socials"
-              ctaLabel="Edit Profile"
-              backExtra={
-                <div className="space-y-3">
-                  <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full bg-white transition-all duration-300"
-                      style={{ width: `${getProfileCompletion(profile)}%` }}
-                    />
-                  </div>
-                  <div className="text-center">
-                    <span className="text-xs text-gray-400">{getProfileCompletion(profile)}% complete</span>
-                  </div>
-                  {!profile.name && (
-                    <div className="px-3 py-1.5 bg-orange-500/20 border border-orange-500/30 rounded-lg">
-                      <span className="text-xs text-orange-300">⚠ Missing name</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+            <div className="w-full">
+              <NavCard
+                icon={User}
+                title="My Profile"
+                description="Setup your info"
+                backTitle="Edit Profile"
+                backDescription="Add your name, bio and socials"
+                ctaLabel="Edit Profile"
+                backExtra={
+                  <div className="space-y-3">
+                    <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-white transition-all duration-300"
+                        style={{ width: `${getProfileCompletion(profile)}%` }}
+                      />
                     </div>
-                  )}
-                </div>
-              }
-              onClick={() => setView("profile")}
-            />
-
-            <NavCard
-              icon={Heart}
-              title="Discover"
-              description="Swipe & match"
-              backTitle="Find Connections"
-              backDescription="Meet people attending the same event"
-              ctaLabel="Start Swiping"
-              backExtra={
-                <div className="flex justify-center gap-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
-                      <User className="w-6 h-6 text-white/40" />
-                    </div>
-                  ))}
-                </div>
-              }
-              onClick={() => {
-                if (!profile.name) {
-                  toast.error("Please complete your profile first")
-                  setView("profile")
-                  return
-                }
-                window.location.href = "/discover"
-              }}
-            />
-
-            <NavCard
-              icon={Calendar}
-              title="Events"
-              description="Find attendees"
-              backTitle="Browse Events"
-              backDescription="See events around you and who's attending"
-              ctaLabel="Browse Events"
-              backExtra={
-                <div className="flex justify-center">
-                  <div className="px-4 py-2 bg-white/10 border border-white/20 rounded-full">
-                    <span className="text-xs text-white/80">Upcoming events</span>
-                  </div>
-                </div>
-              }
-              onClick={() => (window.location.href = "/events")}
-            />
-
-            <NavCard
-              icon={QrCode}
-              title="My QR Code"
-              description="Get scanned"
-              backTitle="Share Your QR"
-              backDescription="Show this to someone so they can connect"
-              ctaLabel="Show QR Code"
-              secondaryLabel="Copy Profile Link"
-              onSecondaryClick={() => {
-                if (typeof window !== "undefined") {
-                  navigator.clipboard.writeText(`${window.location.origin}/?profile=${profile.user_id}`)
-                  toast.success("Link copied to clipboard")
-                }
-              }}
-              backExtra={
-                <div className="flex justify-center">
-                  <div className="bg-white rounded-xl p-2">
-                    <QRCodeSVG value={buildQrPayload(profile)} size={64} level="H" includeMargin={false} />
-                  </div>
-                </div>
-              }
-              onClick={() => {
-                if (!profile.name) {
-                  toast.error("Please complete your profile first")
-                  setView("profile")
-                  return
-                }
-                setView("qr")
-              }}
-            />
-
-            <NavCard
-              icon={Scan}
-              title="Scan Code"
-              description="Save connections"
-              backTitle="Scan QR Code"
-              backDescription="Scan a QR code to collect a profile"
-              ctaLabel="Open Scanner"
-              backExtra={
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-16 h-16 border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
-                    <Scan className="w-8 h-8 text-white/60" />
-                  </div>
-                  <span className="text-xs text-white/60">Open the scanner</span>
-                </div>
-              }
-              onClick={() => setView("scan")}
-            />
-
-            <NavCard
-              icon={Users}
-              title="My Connections"
-              description={`${connections.length} saved`}
-              backTitle="View Connections"
-              backDescription="View and manage saved contacts"
-              ctaLabel="View All"
-              secondaryLabel={connections.length > 0 ? "Export" : undefined}
-              onSecondaryClick={connections.length > 0 ? () => toast.info("Export coming soon") : undefined}
-              backExtra={
-                <div className="flex flex-col items-center gap-3">
-                  {connections.length > 0 ? (
-                    <>
-                      <div className="flex -space-x-3">
-                        {getConnectionsPreview(connections).map((conn, idx) => (
-                          <Avatar key={idx} className="w-12 h-12 border-2 border-gray-900">
-                            <AvatarImage src={conn.connection_data.profile_image || undefined} />
-                            <AvatarFallback className="bg-white text-black text-sm font-bold">
-                              {getInitials(conn.connection_data.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                        ))}
-                      </div>
-                      <div className="px-3 py-1 bg-white/10 rounded-full">
-                        <span className="text-xs text-white/80">{connections.length} saved</span>
-                      </div>
-                    </>
-                  ) : (
                     <div className="text-center">
-                      <span className="text-xs text-white/60">No connections yet</span>
+                      <span className="text-xs text-gray-400">{getProfileCompletion(profile)}% complete</span>
                     </div>
-                  )}
+                    {!profile.name && (
+                      <div className="px-3 py-1.5 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+                        <span className="text-xs text-orange-300">⚠ Missing name</span>
+                      </div>
+                    )}
+                  </div>
+                }
+                onClick={() => setView("profile")}
+              />
+            </div>
+
+            <div className="w-full">
+              <NavCard
+                icon={Heart}
+                title="Discover"
+                description="Swipe & match"
+                backTitle="Find Connections"
+                backDescription="Meet people attending the same event"
+                ctaLabel="Start Swiping"
+                backExtra={
+                  <div className="flex justify-center gap-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-12 h-12 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
+                        <User className="w-6 h-6 text-white/40" />
+                      </div>
+                    ))}
+                  </div>
+                }
+                onClick={() => {
+                  if (!profile.name) {
+                    toast.error("Please complete your profile first")
+                    setView("profile")
+                    return
+                  }
+                  window.location.href = "/discover"
+                }}
+              />
+            </div>
+
+            <div className="w-full">
+              <NavCard
+                icon={Calendar}
+                title="Events"
+                description="Find attendees"
+                backTitle="Browse Events"
+                backDescription="See events around you and who's attending"
+                ctaLabel="Browse Events"
+                backExtra={
+                  <div className="flex justify-center">
+                    <div className="px-4 py-2 bg-white/10 border border-white/20 rounded-full">
+                      <span className="text-xs text-white/80">Upcoming events</span>
+                    </div>
+                  </div>
+                }
+                onClick={() => (window.location.href = "/events")}
+              />
+            </div>
+
+            <div className="w-full">
+              <NavCard
+                icon={QrCode}
+                title="My QR Code"
+                description="Get scanned"
+                backTitle="Share Your QR"
+                backDescription="Show this to someone so they can connect"
+                ctaLabel="Show QR Code"
+                secondaryLabel="Copy Profile Link"
+                onSecondaryClick={() => {
+                  if (typeof window !== "undefined") {
+                    navigator.clipboard.writeText(`${window.location.origin}/?profile=${profile.user_id}`)
+                    toast.success("Link copied to clipboard")
+                  }
+                }}
+                backExtra={
+                  <div className="flex justify-center">
+                    <div className="bg-white rounded-xl p-2">
+                      <QRCodeSVG value={buildQrPayload(profile)} size={64} level="H" includeMargin={false} />
+                    </div>
+                  </div>
+                }
+                onClick={() => {
+                  if (!profile.name) {
+                    toast.error("Please complete your profile first")
+                    setView("profile")
+                    return
+                  }
+                  setView("qr")
+                }}
+              />
+            </div>
+
+            <div className="w-full">
+              <NavCard
+                icon={Scan}
+                title="Scan Code"
+                description="Save connections"
+                backTitle="Scan QR Code"
+                backDescription="Scan a QR code to collect a profile"
+                ctaLabel="Open Scanner"
+                backExtra={
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-16 h-16 border-2 border-dashed border-white/40 rounded-xl flex items-center justify-center">
+                      <Scan className="w-8 h-8 text-white/60" />
+                    </div>
+                    <span className="text-xs text-white/60">Open the scanner</span>
                 </div>
-              }
-              onClick={() => setView("connections")}
-            />
+                }
+                onClick={() => setView("scan")}
+              />
+            </div>
+
+            <div className="w-full">
+              <NavCard
+                icon={Users}
+                title="My Connections"
+                description={`${connections.length} saved`}
+                backTitle="View Connections"
+                backDescription="View and manage saved contacts"
+                ctaLabel="View All"
+                secondaryLabel={connections.length > 0 ? "Export" : undefined}
+                onSecondaryClick={connections.length > 0 ? () => toast.info("Export coming soon") : undefined}
+                backExtra={
+                  <div className="flex flex-col items-center gap-3">
+                    {connections.length > 0 ? (
+                      <>
+                        <div className="flex -space-x-3">
+                          {getConnectionsPreview(connections).map((conn, idx) => (
+                            <Avatar key={idx} className="w-12 h-12 border-2 border-gray-900">
+                              <AvatarImage src={conn.connection_data.profile_image || undefined} />
+                              <AvatarFallback className="bg-white text-black text-sm font-bold">
+                                {getInitials(conn.connection_data.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
+                        <div className="px-3 py-1 bg-white/10 rounded-full">
+                          <span className="text-xs text-white/80">{connections.length} saved</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center">
+                        <span className="text-xs text-white/60">No connections yet</span>
+                      </div>
+                    )}
+                  </div>
+                }
+                onClick={() => setView("connections")}
+              />
+            </div>
           </div>
         </div>
       </div>
