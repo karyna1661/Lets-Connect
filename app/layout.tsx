@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { Suspense } from "react"
 import { Toaster } from "sonner"
+import { PrivyProviderWrapper } from "@/components/privy-provider"
 
 export const metadata: Metadata = {
   title: "Let's Connect",
@@ -44,8 +45,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Let's Connect" />
       </head>
       <body>
-        <Suspense fallback={null}>{children}</Suspense>
-        <Toaster position="top-center" richColors closeButton />
+        <PrivyProviderWrapper>
+          <Suspense fallback={null}>{children}</Suspense>
+          <Toaster position="top-center" richColors closeButton />
+        </PrivyProviderWrapper>
         <script
           dangerouslySetInnerHTML={{
             __html: `

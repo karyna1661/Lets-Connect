@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { usePrivy, useWallets } from '@privy-io/react-auth'
 import {
   QrCode,
   User,
@@ -27,8 +28,7 @@ import {
 import { getProfile, upsertProfile } from "./actions/profile"
 import { getConnections, addConnection, deleteConnection, updateConnectionNotes } from "./actions/connections"
 import type { Profile, Connection } from "@/lib/types"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { AuthForm } from "@/components/auth-form"
+import { PrivyAuthForm } from "@/components/privy-auth-form"
 import { QRCodeDisplay } from "@/components/qr-code-display"
 import { QRScanner } from "@/components/qr-scanner"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
@@ -54,6 +54,9 @@ const SocialIcons = {
 }
 
 export default function LetsConnect() {
+  const { ready, authenticated, user: privyUser, logout } = usePrivy()
+  const { wallets } = useWallets()
+  
   const [view, setView] = useState("home")
   const [profile, setProfile] = useState<Profile>({
     user_id: "",
@@ -73,7 +76,6 @@ export default function LetsConnect() {
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [connections, setConnections] = useState<Connection[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({})
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
   const [isSavingProfile, setIsSavingProfile] = useState(false)
@@ -132,32 +134,26 @@ export default function LetsConnect() {
     })
   }
 
-  let supabase: ReturnType<typeof getSupabaseBrowserClient> | null = null
-  try {
-    supabase = getSupabaseBrowserClient()
-  } catch (error) {
-    console.error("[v0] Supabase initialization error:", error)
-  }
+  let supabase = null
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    if (ready && authenticated && privyUser) {
+      checkAuth()
+    } else if (ready && !authenticated) {
+      setIsLoading(false)
+    }
+  }, [ready, authenticated, privyUser])
 
   const checkAuth = async () => {
-    if (!supabase) {
-      setInitError("Unable to connect to authentication service. Please check your environment variables.")
+    if (!privyUser) {
       setIsLoading(false)
       return
     }
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        await loadData(user.id)
-      }
+      // Use Privy user ID instead of Supabase
+      const userId = privyUser.id
+      await loadData(userId)
     } catch (error) {
       console.error("[v0] Error checking auth:", error)
       toast.error("Failed to authenticate. Please refresh the page.")
@@ -188,11 +184,8 @@ export default function LetsConnect() {
   }
 
   const handleSignOut = async () => {
-    if (!supabase) return
-
     try {
-      await supabase.auth.signOut()
-      setUser(null)
+      await logout()
       setProfile({
         user_id: "",
         name: "",
@@ -238,7 +231,7 @@ export default function LetsConnect() {
   }
 
   const handleScanSuccess = async (scannedProfile: Profile) => {
-    if (!user) {
+    if (!privyUser) {
       toast.error("Please sign in to add connections")
       return
     }
@@ -252,8 +245,8 @@ export default function LetsConnect() {
         return
       }
 
-      await addConnection(user.id, scannedProfile)
-      await loadData(user.id)
+      await addConnection(privyUser.id, scannedProfile)
+      await loadData(privyUser.id)
       setView("connections")
       toast.success(`Connected with ${scannedProfile.name}!`)
     } catch (error) {
@@ -269,7 +262,9 @@ export default function LetsConnect() {
     try {
       setSavingNotes((prev) => ({ ...prev, [connectionId]: true }))
       await updateConnectionNotes(connectionId, notes)
-      await loadData(user.id)
+      if (privyUser) {
+        await loadData(privyUser.id)
+      }
       setEditingNotes((prev) => {
         const newState = { ...prev }
         delete newState[connectionId]
@@ -287,7 +282,9 @@ export default function LetsConnect() {
   const handleDeleteConnection = async (connectionId: string, connectionName: string) => {
     try {
       await deleteConnection(connectionId)
-      await loadData(user.id)
+      if (privyUser) {
+        await loadData(privyUser.id)
+      }
       toast.success(`Removed ${connectionName} from connections`)
     } catch (error) {
       console.error("[v0] Error deleting connection:", error)
@@ -339,7 +336,20 @@ export default function LetsConnect() {
     )
   }
 
-  if (!user) {
+  if (!ready || isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full border-4 border-black animate-spin"></div>
+          </div>
+          <p className="text-black font-bold text-lg">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!authenticated) {
     return (
       <div className="min-h-screen bg-white p-6 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="text-center mb-8 relative z-10">
@@ -348,7 +358,7 @@ export default function LetsConnect() {
           </h1>
           <p className="text-black text-lg">Your social life, one scan away</p>
         </div>
-        <AuthForm />
+        <PrivyAuthForm />
       </div>
     )
   }
@@ -363,7 +373,7 @@ export default function LetsConnect() {
               <p className="text-gray-600 text-lg">Your social life, one scan away</p>
             </div>
             <div className="flex gap-2">
-              {user && <SeedDemoButton userId={user.id} />}
+              {privyUser && <SeedDemoButton userId={privyUser.id} />}
               <button
                 onClick={handleSignOut}
                 className="p-3 hover:bg-gray-200 rounded-full transition-colors"
@@ -585,7 +595,7 @@ export default function LetsConnect() {
 
           <ProfileCard
             profile={profile}
-            userId={user.id}
+            userId={privyUser?.id || ""}
             onSave={async (updatedProfile) => {
               await saveProfile(updatedProfile)
             }}
@@ -612,7 +622,7 @@ export default function LetsConnect() {
             <p className="text-sm text-gray-600 mb-4">
               Connect your Ethereum wallet to sync your POAP collection and unlock compatibility matching
             </p>
-            <POAPSyncButton userId={user.id} currentWallet={profile.wallet_hash} />
+            <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_hash} />
           </div>
         </div>
       </div>
@@ -700,7 +710,9 @@ export default function LetsConnect() {
                     try {
                       setSavingNotes((prev) => ({ ...prev, [connectionId]: true }))
                       await updateConnectionNotes(connectionId, notes)
-                      await loadData(user.id)
+                      if (privyUser) {
+                        await loadData(privyUser.id)
+                      }
                       toast.success("Notes saved successfully")
                     } catch (error) {
                       console.error("[v0] Error saving notes:", error)
