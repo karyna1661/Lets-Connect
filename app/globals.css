@@ -209,10 +209,16 @@ button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
 /* Grid layout fixes */
 .grid {
   display: grid;
+  position: relative;
 }
 
 .auto-rows-fr {
   grid-auto-rows: 1fr;
+}
+
+/* Ensure grid doesn't overlap with header */
+.grid > div {
+  position: relative;
 }
 
 /* Responsive grid for cards */

@@ -366,7 +366,7 @@ export default function LetsConnect() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8 gap-4">
+          <div className="flex items-center justify-between mb-8 gap-4 relative z-20">
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-2 truncate">Let's Connect</h1>
               <p className="text-gray-600 text-sm sm:text-lg">Your social life, one scan away</p>
@@ -381,8 +381,8 @@ export default function LetsConnect() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-fr">
-            <div className="w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-fr relative z-10" style={{ minHeight: '600px' }}>
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={User}
                 title="My Profile"
@@ -407,7 +407,7 @@ export default function LetsConnect() {
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={Heart}
                 title="Discover"
@@ -435,7 +435,7 @@ export default function LetsConnect() {
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={Calendar}
                 title="Events"
@@ -454,7 +454,7 @@ export default function LetsConnect() {
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={QrCode}
                 title="My QR Code"
@@ -480,7 +480,7 @@ export default function LetsConnect() {
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={Scan}
                 title="Scan Code"
@@ -500,7 +500,7 @@ export default function LetsConnect() {
               />
             </div>
 
-            <div className="w-full">
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={Users}
                 title="My Connections"
