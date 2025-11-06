@@ -13,8 +13,10 @@ export function FlipCard({ front, back }: FlipCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
 
   const handleClick = (e: React.MouseEvent) => {
-    // Only flip if clicking on the card itself, not on buttons inside
-    if (!(e.target as HTMLElement).closest('button')) {
+    const target = e.target as HTMLElement
+    // Allow buttons to work normally (they'll stop propagation)
+    // But flip the card when clicking anywhere else on the front
+    if (!target.closest('button') || target.closest('.flip-trigger')) {
       setIsFlipped(!isFlipped)
     }
   }
@@ -37,26 +39,26 @@ export function FlipCard({ front, back }: FlipCardProps) {
     >
       <div
         ref={cardRef}
-        className="relative w-full h-full"
+        className="relative w-full h-full cursor-pointer"
         style={{
           transformStyle: "preserve-3d",
           WebkitTransformStyle: "preserve-3d",
-          transition: "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)",
-          WebkitTransition: "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)",
+          transition: "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+          WebkitTransition: "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          WebkitTransform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
         }}
         onClick={handleClick}
         onTouchStart={handleTouchStart}
       >
         {/* Front */}
         <div
-          className="w-full h-full flex items-center justify-center"
+          className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            WebkitTransform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            position: "relative",
-            zIndex: isFlipped ? -1 : 1,
+            transform: "rotateY(0deg)",
+            WebkitTransform: "rotateY(0deg)",
           }}
         >
           <div className="w-full h-full flex items-center justify-center">
@@ -66,16 +68,12 @@ export function FlipCard({ front, back }: FlipCardProps) {
 
         {/* Back */}
         <div
-          className="w-full h-full flex items-center justify-center"
+          className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            transform: isFlipped ? "rotateY(0deg)" : "rotateY(180deg)",
-            WebkitTransform: isFlipped ? "rotateY(0deg)" : "rotateY(180deg)",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            zIndex: isFlipped ? 1 : -1,
+            transform: "rotateY(180deg)",
+            WebkitTransform: "rotateY(180deg)",
           }}
         >
           <div className="w-full h-full flex items-center justify-center">

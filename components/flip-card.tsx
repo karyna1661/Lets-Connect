@@ -15,8 +15,8 @@ interface FlipCardProps {
 export function FlipCard({
   front,
   back,
-  duration = 400,
-  timingFunction = "cubic-bezier(0.34, 1.56, 0.64, 1)",
+  duration = 800,
+  timingFunction = "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
   zDepth = "lg",
   glowEffect = true,
 }: FlipCardProps) {
@@ -36,10 +36,13 @@ export function FlipCard({
   }
   
   const handleMouseUp = (e: React.MouseEvent) => {
-    // Only flip if not clicking on a button
-    if (!(e.target as HTMLElement).closest('button')) {
+    const target = e.target as HTMLElement
+    // Allow buttons to work normally, but flip when clicking the card front
+    if (!target.closest('button') || target.closest('.flip-trigger')) {
       setIsPressed(false)
       setIsFlipped(!isFlipped)
+    } else {
+      setIsPressed(false)
     }
   }
 
@@ -112,10 +115,6 @@ export function FlipCard({
           }}
           data-side="front"
         >
-          {/* Debug label */}
-          <div className="absolute top-2 left-2 z-50 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-            FRONT
-          </div>
           {/* Subtle gradient overlay based on mouse position */}
           {glowEffect && (
             <div
@@ -141,10 +140,6 @@ export function FlipCard({
           }}
           data-side="back"
         >
-          {/* Debug label */}
-          <div className="absolute top-2 left-2 z-50 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-            BACK
-          </div>
           {/* Glow effect on back as well */}
           {glowEffect && (
             <div
