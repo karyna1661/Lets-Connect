@@ -3,6 +3,18 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
+/**
+ * POAP API Integration
+ * 
+ * Setup Instructions:
+ * 1. Get your POAP API key from https://poap.xyz/
+ * 2. Add to .env.local: POAP_API_KEY=your_api_key_here
+ * 3. Restart your dev server
+ * 
+ * The API will fetch all POAPs associated with a wallet address
+ * and store them in the user_poaps table for compatibility matching.
+ */
+
 const getSupabaseServer = async () => {
   const cookieStore = await cookies()
   return createServerClient(
@@ -32,21 +44,33 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
       throw new Error("Invalid wallet address format")
     }
 
-    // Fetch POAPs from POAP API
-    const apiKey = process.env.NEXT_PUBLIC_POAP_API_KEY
-    const headers: HeadersInit = {}
+    // Fetch POAPs from POAP API using the correct endpoint
+    const apiKey = process.env.POAP_API_KEY || process.env.NEXT_PUBLIC_POAP_API_KEY
     
-    if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`
+    if (!apiKey) {
+      throw new Error("POAP API key not configured. Please add POAP_API_KEY to your .env.local file")
     }
 
+    const headers: HeadersInit = {
+      'X-API-Key': apiKey,
+      'Accept': 'application/json'
+    }
+
+    // Use the correct POAP API v2 endpoint
     const response = await fetch(`https://api.poap.tech/actions/scan/${walletAddress}`, {
       headers,
+      cache: 'no-store'
     })
 
     if (!response.ok) {
-      console.error(`POAP API error: ${response.status} ${response.statusText}`)
-      throw new Error("Failed to fetch POAPs from POAP API")
+      const errorText = await response.text()
+      console.error(`POAP API error: ${response.status} ${response.statusText}`, errorText)
+      
+      if (response.status === 401) {
+        throw new Error("Invalid POAP API key. Please check your POAP_API_KEY in .env.local")
+      }
+      
+      throw new Error(`Failed to fetch POAPs: ${response.statusText}`)
     }
 
     const poaps = await response.json()
@@ -54,6 +78,8 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
     if (!Array.isArray(poaps)) {
       throw new Error("Invalid response from POAP API")
     }
+
+    console.log(`Found ${poaps.length} POAPs for wallet ${walletAddress}`)
 
     // Store wallet address in profile
     await supabase

@@ -1,0 +1,132 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { MessageCircle, Check, AlertCircle, Loader2 } from "lucide-react"
+import { usePrivy } from '@privy-io/react-auth'
+import { syncFromFarcaster } from "@/app/actions/social-sync"
+import { toast } from "sonner"
+import type { Profile } from "@/lib/types"
+
+interface FarcasterSyncButtonProps {
+  onSyncComplete: (data: Partial<Profile>) => void
+  disabled?: boolean
+  compact?: boolean
+}
+
+export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: FarcasterSyncButtonProps) {
+  const { login, user } = usePrivy()
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [hasSynced, setHasSynced] = useState(false)
+
+  // Auto-sync when Farcaster is connected
+  useEffect(() => {
+    if (user?.farcaster?.username && !hasSynced) {
+      handleAutoSync()
+    }
+  }, [user?.farcaster?.username])
+
+  const handleAutoSync = async () => {
+    if (!user?.farcaster?.username) return
+
+    setIsSyncing(true)
+    setSyncStatus('idle')
+
+    try {
+      const result = await syncFromFarcaster(user.farcaster.username)
+
+      if (result.success && result.data) {
+        setSyncStatus('success')
+        onSyncComplete(result.data)
+        setHasSynced(true)
+        toast.success(`Synced from Farcaster!`)
+        
+        setTimeout(() => setSyncStatus('idle'), 3000)
+      } else {
+        setSyncStatus('error')
+        toast.error(result.error || 'Failed to sync from Farcaster')
+        setTimeout(() => setSyncStatus('idle'), 3000)
+      }
+    } catch (error) {
+      console.error('Error syncing from Farcaster:', error)
+      setSyncStatus('error')
+      toast.error('An unexpected error occurred')
+      setTimeout(() => setSyncStatus('idle'), 3000)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  const handleConnect = () => {
+    // Open Privy login with Farcaster pre-selected
+    login()
+  }
+
+  const getButtonColor = () => {
+    if (syncStatus === 'success') return 'bg-green-600 hover:bg-green-700'
+    if (syncStatus === 'error') return 'bg-red-600 hover:bg-red-700'
+    return 'bg-purple-600 hover:bg-purple-700'
+  }
+
+  const getButtonContent = () => {
+    if (isSyncing) {
+      return (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Syncing...
+        </>
+      )
+    }
+
+    if (syncStatus === 'success') {
+      return (
+        <>
+          <Check className="w-4 h-4" />
+          Synced!
+        </>
+      )
+    }
+
+    if (syncStatus === 'error') {
+      return (
+        <>
+          <AlertCircle className="w-4 h-4" />
+          Sync Failed
+        </>
+      )
+    }
+
+    if (user?.farcaster?.username) {
+      return (
+        <>
+          <Check className="w-4 h-4" />
+          Connected
+        </>
+      )
+    }
+
+    return (
+      <>
+        <MessageCircle className="w-4 h-4" />
+        Connect Farcaster
+      </>
+    )
+  }
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation()
+        if (!user?.farcaster?.username) {
+          handleConnect()
+        } else {
+          handleAutoSync()
+        }
+      }}
+      disabled={disabled || isSyncing}
+      className={`w-full py-3 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg`}
+    >
+      {getButtonContent()}
+    </button>
+  )
+}

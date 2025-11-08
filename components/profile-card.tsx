@@ -6,6 +6,8 @@ import { FlipCard } from "@/components/flip-card-simple"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
 import { POAPSyncButton } from "@/components/poap-sync-button"
 import { SocialOAuthConnect } from "@/components/social-oauth-connect"
+import { FarcasterSyncButton } from "@/components/farcaster-sync-button"
+import { TalentProtocolSyncButton } from "@/components/talent-protocol-sync-button"
 import type { Profile } from "@/lib/types"
 
 interface ProfileCardProps {
@@ -45,16 +47,6 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
         boxShadow: `0 0 0 1px rgba(0,0,0,1), 0 8px 24px rgba(0,0,0,0.1)`
       }}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center">
-          <User className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h3 className="text-xl font-bold text-black">Your Profile</h3>
-          <p className="text-sm text-black">View your info</p>
-        </div>
-      </div>
-
       <div className="space-y-4">
         <div className="flex items-start gap-4">
           {editedProfile.profile_image ? (
@@ -118,6 +110,28 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
               </div>
             )
           })}
+        </div>
+
+        {/* Quick Sync Actions */}
+        <div className="space-y-2 mt-4 pt-4 border-t-2 border-black">
+          <p className="text-xs font-bold text-black uppercase tracking-wide mb-3">Quick Setup</p>
+          <div className="grid grid-cols-1 gap-2">
+            <FarcasterSyncButton
+              onSyncComplete={(data) => {
+                handleChange(data)
+              }}
+              disabled={isSaving}
+              compact
+            />
+            <TalentProtocolSyncButton
+              onSyncComplete={(data) => {
+                handleChange(data)
+              }}
+              disabled={isSaving}
+              compact
+            />
+          </div>
+          <p className="text-xs text-gray-600 mt-2 text-center">Sync to auto-fill 90% of your profile</p>
         </div>
       </div>
 
