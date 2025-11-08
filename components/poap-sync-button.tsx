@@ -25,21 +25,30 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
     // Priority: Privy wallet > current wallet from profile
     const walletToSync = privyWallet || currentWallet
     
+    console.log('[POAP Sync Button] Privy wallet:', privyWallet)
+    console.log('[POAP Sync Button] Current wallet:', currentWallet)
+    console.log('[POAP Sync Button] Wallet to sync:', walletToSync)
+    
     if (!walletToSync) {
+      console.error('[POAP Sync Button] No wallet found')
       toast.error("No wallet found. Please sync with Farcaster first to get your wallet address.")
       return
     }
 
     try {
       setIsLoading(true)
+      console.log('[POAP Sync Button] Starting sync for wallet:', walletToSync)
 
       // Link wallet if new
       if (walletToSync !== currentWallet) {
+        console.log('[POAP Sync Button] Linking new wallet')
         await linkWallet(userId, walletToSync)
       }
 
       // Sync POAPs
+      console.log('[POAP Sync Button] Calling syncPOAPsFromAPI')
       const result = await syncPOAPsFromAPI(userId, walletToSync)
+      console.log('[POAP Sync Button] Sync result:', result)
       toast.success(`Synced ${result.count} POAPs from your wallet`)
 
       // Fetch updated POAPs

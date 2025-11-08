@@ -131,6 +131,17 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
               compact
             />
           </div>
+          
+          {/* Wallet Address Display */}
+          {editedProfile.wallet_address && (
+            <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+              <p className="text-xs font-semibold text-purple-900 mb-1">Wallet Connected</p>
+              <p className="text-xs font-mono text-purple-700 truncate">
+                {editedProfile.wallet_address.slice(0, 6)}...{editedProfile.wallet_address.slice(-4)}
+              </p>
+            </div>
+          )}
+          
           <p className="text-xs text-gray-600 mt-2 text-center leading-relaxed">Sync to auto-fill 90% of your profile</p>
         </div>
       </div>
