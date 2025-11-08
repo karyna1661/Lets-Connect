@@ -9,10 +9,13 @@ export function DevconnectEventCard() {
   return (
     <div className="w-full h-full perspective-1000">
       <div
-        className={`relative w-full h-full transition-transform duration-500 preserve-3d cursor-pointer ${
+        className={`relative w-full h-full preserve-3d cursor-pointer ${
           isFlipped ? "rotate-y-180" : ""
         }`}
         onClick={() => setIsFlipped(!isFlipped)}
+        style={{
+          transition: "transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+        }}
       >
         {/* Front - DEVCONNECT Image */}
         <div
