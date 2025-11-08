@@ -56,7 +56,7 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
     <button
       onClick={handleSync}
       disabled={isLoading || !privyWallet}
-      className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+      className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation"
     >
       {isLoading ? (
         <>

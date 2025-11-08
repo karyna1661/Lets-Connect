@@ -115,7 +115,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
         {/* Quick Sync Actions */}
         <div className="space-y-2 mt-4 pt-4 border-t-2 border-black">
           <p className="text-xs font-bold text-black uppercase tracking-wide mb-3">Quick Setup</p>
-          <div className="grid grid-cols-1 gap-2">
+          <div className="grid grid-cols-1 gap-2.5">
             <FarcasterSyncButton
               onSyncComplete={(data) => {
                 handleChange(data)
@@ -131,7 +131,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
               compact
             />
           </div>
-          <p className="text-xs text-gray-600 mt-2 text-center">Sync to auto-fill 90% of your profile</p>
+          <p className="text-xs text-gray-600 mt-2 text-center leading-relaxed">Sync to auto-fill 90% of your profile</p>
         </div>
       </div>
 

@@ -124,7 +124,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
         }
       }}
       disabled={disabled || isSyncing}
-      className={`w-full py-3 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg`}
+      className={`w-full py-3.5 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation`}
     >
       {getButtonContent()}
     </button>
