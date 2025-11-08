@@ -3,19 +3,20 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronDown, Loader2, AlertCircle, X } from "lucide-react"
+import { usePrivy } from '@privy-io/react-auth'
 import { getEvents, getEventAttendees } from "@/app/actions/events"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { EventCard } from "@/components/event-card"
 import { AttendeeGrid } from "@/components/attendee-grid"
 import { toast } from "sonner"
+import { DevconnectEventCard } from "@/components/devconnect-event-card"
 import type { Profile } from "@/lib/types"
 
 export default function EventsPage() {
   const router = useRouter()
+  const { ready, authenticated, user: privyUser } = usePrivy()
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [pastEvents, setPastEvents] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [eventAttendees, setEventAttendees] = useState<Profile[]>([])
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false)
@@ -23,32 +24,11 @@ export default function EventsPage() {
   const [cities, setCities] = useState<string[]>([])
   const [showUpcoming, setShowUpcoming] = useState(true)
 
-  let supabase: ReturnType<typeof getSupabaseBrowserClient> | null = null
-  try {
-    supabase = getSupabaseBrowserClient()
-  } catch (error) {
-    console.error("[v0] Supabase initialization error:", error)
-  }
-
   useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
-    if (!supabase) return
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        await loadEvents(user.id)
-      }
-    } catch (error) {
-      console.error("[v0] Error checking auth:", error)
+    if (ready && authenticated && privyUser) {
+      loadEvents(privyUser.id)
     }
-  }
+  }, [ready, authenticated, privyUser])
 
   const loadEvents = async (userId: string, city?: string) => {
     try {
@@ -72,13 +52,13 @@ export default function EventsPage() {
   }
 
   const handleViewAttendees = async (eventId: string) => {
-    if (!user) return
+    if (!privyUser) return
 
     try {
       setIsLoadingAttendees(true)
       setSelectedEventId(eventId)
 
-      const attendees = await getEventAttendees(eventId, user.id)
+      const attendees = await getEventAttendees(eventId, privyUser.id)
       setEventAttendees(attendees)
     } catch (error) {
       console.error("[v0] Error loading attendees:", error)
@@ -88,7 +68,7 @@ export default function EventsPage() {
     }
   }
 
-  if (!user) {
+  if (!authenticated || !privyUser) {
     return (
       <div className="min-h-screen bg-white p-6 flex items-center justify-center">
         <div className="text-center">
@@ -185,7 +165,7 @@ export default function EventsPage() {
                 value={selectedCity}
                 onChange={(e) => {
                   setSelectedCity(e.target.value)
-                  loadEvents(user.id, e.target.value || undefined)
+                  loadEvents(privyUser.id, e.target.value || undefined)
                 }}
                 className="w-full px-4 py-3 border-2 border-black rounded-xl appearance-none bg-white cursor-pointer font-semibold"
               >
@@ -209,6 +189,13 @@ export default function EventsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* DEVCONNECT Card - Show only for upcoming events */}
+            {showUpcoming && (
+              <div className="w-full" style={{ minHeight: '280px' }}>
+                <DevconnectEventCard />
+              </div>
+            )}
+            
             {events.map((event) => (
               <EventCard
                 key={event.id}

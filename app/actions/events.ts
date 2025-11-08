@@ -3,8 +3,8 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-const getSupabaseServer = () => {
-  const cookieStore = cookies()
+const getSupabaseServer = async () => {
+  const cookieStore = await cookies()
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
@@ -25,7 +25,7 @@ const getSupabaseServer = () => {
 
 export async function getEvents(city?: string, upcoming = true) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServer()
 
     let query = supabase.from("events").select("*")
 
@@ -52,7 +52,7 @@ export async function getEvents(city?: string, upcoming = true) {
 
 export async function getEventAttendees(eventId: string, userId: string) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServer()
 
     // Find all users who have a POAP for this event
     const { data, error } = await supabase
@@ -72,7 +72,7 @@ export async function getEventAttendees(eventId: string, userId: string) {
 
 export async function getEventDetails(eventId: string) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServer()
 
     const { data, error } = await supabase.from("events").select("*").eq("id", eventId).single()
 

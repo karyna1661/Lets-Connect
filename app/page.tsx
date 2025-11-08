@@ -438,7 +438,22 @@ export default function LetsConnect() {
             </div>
 
             <div className="w-full relative" style={{ minHeight: '280px' }}>
-              <DevconnectEventCard />
+              <NavCard
+                icon={Calendar}
+                title="Events"
+                description="Find attendees"
+                backTitle="Browse Events"
+                backDescription="See events around you and who's attending"
+                ctaLabel="Browse Events"
+                backExtra={
+                  <div className="flex justify-center">
+                    <div className="px-4 py-2 bg-white/10 border border-white/20 rounded-full">
+                      <span className="text-xs text-white/80">Upcoming events</span>
+                    </div>
+                  </div>
+                }
+                onClick={() => (window.location.href = "/events")}
+              />
             </div>
 
             <div className="w-full relative" style={{ minHeight: '280px' }}>
