@@ -1,5 +1,6 @@
 "use client"
 
+// Optimized for mobile - v2.0
 import { useState, useEffect } from "react"
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import {
