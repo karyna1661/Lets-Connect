@@ -39,8 +39,11 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
   try {
     const supabase = await getSupabaseServer()
 
+    console.log(`[POAP Sync] Starting sync for wallet: ${walletAddress}`)
+
     // Validate wallet format
     if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+      console.error(`[POAP Sync] Invalid wallet format: ${walletAddress}`)
       throw new Error("Invalid wallet address format")
     }
 
@@ -48,6 +51,7 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
     const apiKey = process.env.POAP_API_KEY || process.env.NEXT_PUBLIC_POAP_API_KEY
     
     if (!apiKey) {
+      console.error(`[POAP Sync] No API key found in environment`)
       throw new Error("POAP API key not configured. Please add POAP_API_KEY to your .env.local file")
     }
 
@@ -56,18 +60,29 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
       'Accept': 'application/json'
     }
 
+    const apiUrl = `https://api.poap.tech/actions/scan/${walletAddress}`
+    console.log(`[POAP Sync] Fetching from: ${apiUrl}`)
+
     // Use the correct POAP API v2 endpoint
-    const response = await fetch(`https://api.poap.tech/actions/scan/${walletAddress}`, {
+    const response = await fetch(apiUrl, {
       headers,
       cache: 'no-store'
     })
 
+    console.log(`[POAP Sync] API Response Status: ${response.status}`)
+
     if (!response.ok) {
       const errorText = await response.text()
-      console.error(`POAP API error: ${response.status} ${response.statusText}`, errorText)
+      console.error(`[POAP Sync] API error: ${response.status} ${response.statusText}`, errorText)
       
       if (response.status === 401) {
         throw new Error("Invalid POAP API key. Please check your POAP_API_KEY in .env.local")
+      }
+      
+      if (response.status === 404) {
+        // 404 might mean no POAPs found, return empty result
+        console.log(`[POAP Sync] No POAPs found for wallet ${walletAddress}`)
+        return { count: 0, wallet: walletAddress }
       }
       
       throw new Error(`Failed to fetch POAPs: ${response.statusText}`)
@@ -79,7 +94,8 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
       throw new Error("Invalid response from POAP API")
     }
 
-    console.log(`Found ${poaps.length} POAPs for wallet ${walletAddress}`)
+    console.log(`[POAP Sync] Found ${poaps.length} POAPs for wallet ${walletAddress}`)
+    console.log(`[POAP Sync] Sample POAP structure:`, poaps[0])
 
     // Store wallet address in profile
     await supabase
@@ -87,14 +103,15 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
       .update({ wallet_address: walletAddress })
       .eq("user_id", userId)
 
-    // Prepare POAP data for insertion
+    // Prepare POAP data for insertion based on API documentation
+    // API returns: { event: { id, name, image_url, start_date, ... }, tokenId, chain, owner }
     const poapData = poaps.map((poap: any) => ({
       wallet_address: walletAddress,
-      event_id: poap.event?.id || poap.eventId,
-      event_name: poap.event?.name || poap.eventName || "Unknown Event",
-      image_url: poap.event?.image_url || poap.event?.imageUrl || poap.imageUrl,
-      event_date: poap.event?.start_date || poap.event?.startDate || poap.eventDate || new Date().toISOString(),
-    }))
+      event_id: String(poap.event?.id || ''),
+      event_name: poap.event?.name || "Unknown Event",
+      image_url: poap.event?.image_url ? `${poap.event.image_url}?size=small` : '',
+      event_date: poap.event?.start_date || new Date().toISOString(),
+    })).filter(p => p.event_id) // Only include POAPs with valid event IDs
 
     // Upsert POAPs (avoid duplicates)
     if (poapData.length > 0) {

@@ -595,7 +595,7 @@ export default function LetsConnect() {
             <p className="text-sm text-gray-600 mb-4">
               Connect your Ethereum wallet to sync your POAP collection and unlock compatibility matching
             </p>
-            <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_hash} />
+            <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_address} />
           </div>
         </div>
       </div>
