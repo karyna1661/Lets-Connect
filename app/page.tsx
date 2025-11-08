@@ -41,6 +41,7 @@ import { ProfileCard } from "@/components/profile-card"
 import { NavCard } from "@/components/nav-card"
 import { DevconnectEventCard } from "@/components/devconnect-event-card"
 import { QRCodeSVG } from "qrcode.react"
+import { getUserPOAPs } from "./actions/poaps"
 
 const SocialIcons = {
   instagram: Instagram,
@@ -76,6 +77,7 @@ export default function LetsConnect() {
   })
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [connections, setConnections] = useState<Connection[]>([])
+  const [poaps, setPoaps] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({})
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
@@ -155,6 +157,11 @@ export default function LetsConnect() {
       // Use Privy user ID instead of Supabase
       const userId = privyUser.id
       await loadData(userId)
+      try {
+        const p = await getUserPOAPs(userId)
+        setPoaps(p)
+      } catch {}
+
     } catch (error) {
       console.error("[v0] Error checking auth:", error)
       toast.error("Failed to authenticate. Please refresh the page.")
@@ -588,7 +595,25 @@ export default function LetsConnect() {
             <p className="text-sm text-gray-600 mb-4">
               Connect your Ethereum wallet to sync your POAP collection and unlock compatibility matching
             </p>
-            <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_address} />
+            <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_address} onSyncComplete={async () => {
+              if (privyUser?.id) {
+                const p = await getUserPOAPs(privyUser.id)
+                setPoaps(p)
+              }
+            }} />
+            {poaps.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {poaps.map((poap, idx) => (
+                  <div key={idx} className="flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-3">
+                    {poap.image_url && (
+                      <img src={poap.image_url} alt={poap.event_name} className="w-16 h-16 rounded-lg object-cover" />
+                    )}
+                    <span className="mt-2 text-xs text-white/80 text-center line-clamp-2">{poap.event_name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
         </div>
       </div>

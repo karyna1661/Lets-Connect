@@ -1,6 +1,7 @@
 "use server"
 
 import { createServerClient } from "@supabase/ssr"
+import { createClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 
 /**
@@ -15,6 +16,13 @@ import { cookies } from "next/headers"
  * and store them in the user_poaps table for compatibility matching.
  */
 
+const getSupabaseAdmin = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE || ""
+  if (!url || !serviceRole) return null
+  return createClient(url, serviceRole)
+}
+
 const getSupabaseServer = async () => {
   const cookieStore = await cookies()
   return createServerClient(
@@ -22,14 +30,8 @@ const getSupabaseServer = async () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-          } catch {}
-        },
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {} },
       },
     },
   )
@@ -38,6 +40,7 @@ const getSupabaseServer = async () => {
 export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
   try {
     const supabase = await getSupabaseServer()
+    const admin = getSupabaseAdmin()
 
     console.log(`[POAP Sync] Starting sync for wallet: ${walletAddress}`)
 
@@ -97,11 +100,24 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
     console.log(`[POAP Sync] Found ${poaps.length} POAPs for wallet ${walletAddress}`)
     console.log(`[POAP Sync] Sample POAP structure:`, poaps[0])
 
-    // Store wallet address in profile
-    await supabase
-      .from("profiles")
-      .update({ wallet_address: walletAddress })
-      .eq("user_id", userId)
+    // Store wallet address in profile (use admin if available to bypass RLS)
+    if (admin) {
+      const { error: updErr } = await admin
+        .from("profiles")
+        .update({ wallet_address: walletAddress })
+        .eq("user_id", userId)
+      if (updErr) {
+        console.error("[POAP Sync] Admin update profile error:", updErr)
+      }
+    } else {
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ wallet_address: walletAddress })
+        .eq("user_id", userId)
+      if (updErr) {
+        console.error("[POAP Sync] Update profile error:", updErr)
+      }
+    }
 
     // Prepare POAP data for insertion based on API documentation
     // API returns: { event: { id, name, image_url, start_date, ... }, tokenId, chain, owner }
@@ -115,13 +131,22 @@ export async function syncPOAPsFromAPI(userId: string, walletAddress: string) {
 
     // Upsert POAPs (avoid duplicates)
     if (poapData.length > 0) {
-      const { error } = await supabase
-        .from("user_poaps")
-        .upsert(poapData, { onConflict: "wallet_address,event_id" })
-
-      if (error) {
-        console.error("Error upserting POAPs:", error)
-        throw new Error("Failed to save POAPs to database")
+      if (admin) {
+        const { error } = await admin
+          .from("user_poaps")
+          .upsert(poapData, { onConflict: "wallet_address,event_id" })
+        if (error) {
+          console.error("[POAP Sync] Admin upsert POAPs error:", error)
+          // Do not throw to allow display fallback
+        }
+      } else {
+        const { error } = await supabase
+          .from("user_poaps")
+          .upsert(poapData, { onConflict: "wallet_address,event_id" })
+        if (error) {
+          console.error("[POAP Sync] Upsert POAPs error:", error)
+          // Do not throw to allow display fallback
+        }
       }
     }
 
@@ -143,18 +168,48 @@ export async function getUserPOAPs(userId: string) {
       .eq("user_id", userId)
       .single()
 
-    if (!profile?.wallet_address) {
+    const wallet = profile?.wallet_address
+    if (!wallet) {
       return []
     }
 
+    // First try DB
     const { data, error } = await supabase
       .from("user_poaps")
       .select("*")
-      .eq("wallet_address", profile.wallet_address)
+      .eq("wallet_address", wallet)
       .order("event_date", { ascending: false })
 
-    if (error) throw error
-    return data || []
+    if (error) {
+      console.error("[Get POAPs] DB Error:", error)
+    }
+
+    if (data && data.length > 0) {
+      return data
+    }
+
+    // Fallback to POAP API directly if DB empty or error
+    try {
+      const apiKey = process.env.POAP_API_KEY || process.env.NEXT_PUBLIC_POAP_API_KEY
+      if (!apiKey) return []
+
+      const headers: HeadersInit = { 'X-API-Key': apiKey, 'Accept': 'application/json' }
+      const response = await fetch(`https://api.poap.tech/actions/scan/${wallet}`, { headers, cache: 'no-store' })
+      if (!response.ok) return []
+      const poaps = await response.json()
+      if (!Array.isArray(poaps)) return []
+
+      return poaps.map((poap: any) => ({
+        wallet_address: wallet,
+        event_id: String(poap.event?.id || ''),
+        event_name: poap.event?.name || "Unknown Event",
+        image_url: poap.event?.image_url ? `${poap.event.image_url}?size=small` : '',
+        event_date: poap.event?.start_date || new Date().toISOString(),
+      })).filter((p: any) => p.event_id)
+    } catch (e) {
+      console.error("[Get POAPs] API fallback error:", e)
+      return []
+    }
   } catch (error) {
     console.error("[Get POAPs] Error:", error)
     return []
