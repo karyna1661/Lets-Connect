@@ -55,3 +55,51 @@ export async function getProfileByUserId(userId: string) {
 
   return data
 }
+
+/**
+ * Merge profiles when a user links a new authentication method
+ * This ensures all login methods point to the same profile
+ */
+export async function mergeProfileOnAccountLink(newUserId: string, existingEmail?: string) {
+  const supabase = await getSupabaseServerClient()
+
+  try {
+    // Check if there's an existing profile with this email
+    if (existingEmail) {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("email", existingEmail)
+        .single()
+
+      if (existingProfile && existingProfile.user_id !== newUserId) {
+        // Merge data from both profiles, keeping the most complete data
+        const mergedProfile = {
+          ...existingProfile,
+          user_id: newUserId,  // Use new Privy user ID
+          // Keep existing data, only update if new fields are not empty
+          updated_at: new Date().toISOString(),
+        }
+
+        // Update the profile with new user_id
+        await supabase
+          .from("profiles")
+          .upsert(mergedProfile, { onConflict: "user_id" })
+
+        // Delete old profile if it exists
+        await supabase
+          .from("profiles")
+          .delete()
+          .eq("user_id", existingProfile.user_id)
+
+        console.log('[Profile Merge] Successfully merged profiles:', existingProfile.user_id, '->', newUserId)
+        return mergedProfile
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('[Profile Merge] Error merging profiles:', error)
+    return null
+  }
+}

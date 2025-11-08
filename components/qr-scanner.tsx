@@ -26,8 +26,10 @@ export function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
       await html5QrCode.start(
         { facingMode: "environment" },
         {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
+          fps: 30,  // Increased from 10 to 30 for faster scanning
+          qrbox: { width: 280, height: 280 },  // Slightly larger scan area
+          aspectRatio: 1.0,
+          disableFlip: false,
         },
         (decodedText) => {
           try {

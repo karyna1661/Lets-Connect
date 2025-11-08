@@ -69,13 +69,27 @@ export async function fetchFarcasterProfile(identifier: string): Promise<Farcast
 
     // Extract wallet addresses from verified_addresses
     const walletAddresses: string[] = []
-    if (user.verified_addresses?.eth_addresses) {
+    
+    // Priority 1: Verified Ethereum addresses
+    if (user.verified_addresses?.eth_addresses && Array.isArray(user.verified_addresses.eth_addresses)) {
       walletAddresses.push(...user.verified_addresses.eth_addresses)
     }
-    // Also check custody_address (Farcaster's managed wallet)
-    if (user.custody_address) {
+    
+    // Priority 2: Custody address (Farcaster's managed wallet)
+    if (user.custody_address && !walletAddresses.includes(user.custody_address)) {
       walletAddresses.push(user.custody_address)
     }
+    
+    // Priority 3: Check verifications array for wallet addresses
+    if (user.verifications && Array.isArray(user.verifications)) {
+      user.verifications.forEach((addr: string) => {
+        if (addr && addr.startsWith('0x') && !walletAddresses.includes(addr)) {
+          walletAddresses.push(addr)
+        }
+      })
+    }
+    
+    console.log('[Farcaster API] Wallet addresses found:', walletAddresses)
 
     return {
       fid: user.fid,
@@ -149,5 +163,59 @@ export async function fetchFarcasterProfileWarpcast(username: string): Promise<P
   } catch (error) {
     console.error('Error fetching Farcaster profile from Warpcast:', error)
     return null
+  }
+}
+
+/**
+ * Fetch Farcaster users by wallet addresses (bulk)
+ * Useful for finding Farcaster profiles from wallet addresses
+ */
+export async function fetchFarcasterByWallets(walletAddresses: string[]): Promise<FarcasterProfile[]> {
+  try {
+    if (!walletAddresses || walletAddresses.length === 0) {
+      return []
+    }
+
+    const addressesParam = walletAddresses.join(',')
+    const response = await fetch(
+      `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${addressesParam}`,
+      {
+        headers: {
+          'accept': 'application/json',
+          'api_key': process.env.NEYNAR_API_KEY || '',
+        },
+      }
+    )
+
+    if (!response.ok) {
+      console.error('Neynar bulk-by-address error:', response.status)
+      return []
+    }
+
+    const data = await response.json()
+    const users = data[walletAddresses[0]]  // Returns map of address -> user array
+
+    if (!users || users.length === 0) {
+      return []
+    }
+
+    return users.map((user: any) => ({
+      fid: user.fid,
+      username: user.username,
+      displayName: user.display_name || user.username,
+      pfp: {
+        url: user.pfp_url || '',
+      },
+      profile: {
+        bio: {
+          text: user.profile?.bio?.text || '',
+        },
+      },
+      verifications: user.verified_addresses?.eth_addresses || [],
+      walletAddresses: user.verified_addresses?.eth_addresses || [],
+    }))
+  } catch (error) {
+    console.error('Error fetching Farcaster by wallets:', error)
+    return []
   }
 }

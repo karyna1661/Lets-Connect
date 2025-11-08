@@ -48,10 +48,13 @@ export async function syncFromFarcaster(farcasterUsername: string): Promise<Soci
       syncedData.twitter = `@${profile.connectedAccounts.twitter}`
     }
 
-    // Extract primary wallet address
+    // Extract primary wallet address - CRITICAL: Save to wallet_address field
     const walletAddress = profile.walletAddresses?.[0]
     if (walletAddress) {
       syncedData.wallet_address = walletAddress
+      console.log('[Farcaster Sync] Wallet address found:', walletAddress)
+    } else {
+      console.warn('[Farcaster Sync] No wallet address found for', cleanUsername)
     }
 
     return {

@@ -157,7 +157,19 @@ export default function LetsConnect() {
           if (farcasterUsername) {
             const result = await syncFromFarcaster(farcasterUsername)
             if (result.success && result.data) {
-              setProfile(prev => ({ ...prev, ...result.data }))
+              const updatedProfile = { ...profile, ...result.data }
+              setProfile(updatedProfile)
+              
+              // Auto-save the profile with wallet_address to database
+              if (privyUser?.id) {
+                try {
+                  await upsertProfile({ ...updatedProfile, user_id: privyUser.id })
+                  console.log('[Auto Sync] Profile saved with wallet_address:', result.data.wallet_address)
+                } catch (saveError) {
+                  console.error('[Auto Sync] Failed to save profile:', saveError)
+                }
+              }
+              
               // Refresh POAPs after wallet is set
               const p = privyUser?.id ? await getUserPOAPs(privyUser.id) : []
               setPoaps(p)
@@ -181,6 +193,18 @@ export default function LetsConnect() {
     try {
       // Use Privy user ID instead of Supabase
       const userId = privyUser.id
+      
+      // Check if user has email and try to merge profiles
+      const userEmail = (privyUser as any)?.email?.address
+      if (userEmail) {
+        try {
+          const { mergeProfileOnAccountLink } = await import('./actions/profile')
+          await mergeProfileOnAccountLink(userId, userEmail)
+        } catch (mergeError) {
+          console.log('[Profile Merge] No merge needed or error:', mergeError)
+        }
+      }
+      
       await loadData(userId)
       try {
         const p = await getUserPOAPs(userId)
