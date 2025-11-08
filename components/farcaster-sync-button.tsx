@@ -19,6 +19,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [hasSynced, setHasSynced] = useState(false)
+  const [hasShownToast, setHasShownToast] = useState(false)
 
   // Auto-sync when Farcaster is connected
   useEffect(() => {
@@ -41,11 +42,14 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
         onSyncComplete(result.data)
         setHasSynced(true)
         
-        // Show success message with wallet info if available
-        if (result.walletAddress) {
-          toast.success(`Synced from Farcaster! Wallet detected: ${result.walletAddress.slice(0, 6)}...${result.walletAddress.slice(-4)}`)
-        } else {
-          toast.success(`Synced from Farcaster!`)
+        // Show success message with wallet info if available - ONLY ONCE
+        if (!hasShownToast) {
+          if (result.walletAddress) {
+            toast.success(`Synced from Farcaster! Wallet detected: ${result.walletAddress.slice(0, 6)}...${result.walletAddress.slice(-4)}`)
+          } else {
+            toast.success(`Synced from Farcaster!`)
+          }
+          setHasShownToast(true)
         }
         
         setTimeout(() => setSyncStatus('idle'), 3000)

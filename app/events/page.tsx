@@ -181,20 +181,12 @@ export default function EventsPage() {
           )}
         </div>
 
-        {events.length === 0 ? (
-          <div className="text-center py-12">
-            <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-black mb-2">No Events Found</h2>
-            <p className="text-gray-600">{showUpcoming ? "No upcoming events" : "No past events"}</p>
-          </div>
-        ) : (
+        {/* Always show DEVCONNECT card for upcoming, then other events */}
+        {showUpcoming && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* DEVCONNECT Card - Show only for upcoming events */}
-            {showUpcoming && (
-              <div className="w-full" style={{ minHeight: '280px' }}>
-                <DevconnectEventCard />
-              </div>
-            )}
+            <div className="w-full" style={{ minHeight: '280px' }}>
+              <DevconnectEventCard />
+            </div>
             
             {events.map((event) => (
               <EventCard
@@ -209,6 +201,32 @@ export default function EventsPage() {
               />
             ))}
           </div>
+        )}
+        
+        {/* Past events - no DEVCONNECT card */}
+        {!showUpcoming && (
+          events.length === 0 ? (
+            <div className="text-center py-12">
+              <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-black mb-2">No Events Found</h2>
+              <p className="text-gray-600">No past events</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {events.map((event) => (
+                <EventCard
+                  key={event.id}
+                  eventName={event.name}
+                  eventDate={event.event_date}
+                  city={event.city}
+                  attendeeCount={event.attendee_count || 0}
+                  imageUrl={event.image_url}
+                  isPast={!showUpcoming}
+                  onViewAttendees={() => handleViewAttendees(event.id)}
+                />
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>

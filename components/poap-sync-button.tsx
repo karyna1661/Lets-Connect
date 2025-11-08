@@ -47,7 +47,17 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
       onSyncComplete?.()
     } catch (error) {
       console.error("[POAP Sync] Error:", error)
-      toast.error("Failed to sync POAPs. Please try again.")
+      
+      // Show specific error message
+      const errorMessage = error instanceof Error ? error.message : "Failed to sync POAPs. Please try again."
+      
+      if (errorMessage.includes("API key")) {
+        toast.error("POAP API key not configured. Please contact support.")
+      } else if (errorMessage.includes("Invalid wallet")) {
+        toast.error("Invalid wallet address format. Please sync with Farcaster first.")
+      } else {
+        toast.error(errorMessage)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -56,7 +66,7 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
   return (
     <button
       onClick={handleSync}
-      disabled={isLoading || !privyWallet}
+      disabled={isLoading || (!privyWallet && !currentWallet)}
       className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation"
     >
       {isLoading ? (
