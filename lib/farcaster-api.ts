@@ -1,7 +1,9 @@
 /**
- * Farcaster API Integration
+ * Farcaster API Integration using Neynar SDK
  * Fetches user profile data including name, pfp, and connected Twitter account
  */
+
+import { NeynarAPIClient, Configuration } from "@neynar/nodejs-sdk"
 
 export interface FarcasterProfile {
   fid: number
@@ -22,11 +24,122 @@ export interface FarcasterProfile {
   }
 }
 
+// Initialize Neynar client
+let neynarClient: NeynarAPIClient | null = null
+
+function getNeynarClient(): NeynarAPIClient | null {
+  if (!process.env.NEYNAR_API_KEY) {
+    console.warn('[Farcaster API] NEYNAR_API_KEY not set, SDK features disabled')
+    return null
+  }
+  
+  if (!neynarClient) {
+    const config = new Configuration({
+      apiKey: process.env.NEYNAR_API_KEY,
+    })
+    neynarClient = new NeynarAPIClient(config)
+  }
+  
+  return neynarClient
+}
+
 /**
- * Fetch Farcaster user profile by username or FID
- * Using Neynar API (popular Farcaster API service)
+ * Fetch Farcaster user profile by username or FID using Neynar SDK
  */
 export async function fetchFarcasterProfile(identifier: string): Promise<FarcasterProfile | null> {
+  try {
+    const client = getNeynarClient()
+    
+    // Fallback to public API if no SDK client
+    if (!client) {
+      return await fetchFarcasterProfilePublic(identifier)
+    }
+
+    // Check if identifier is FID (numeric) or username
+    const isFID = /^\d+$/.test(identifier)
+    
+    let user: any
+    
+    if (isFID) {
+      // Fetch by FID using bulk users endpoint
+      const response = await client.fetchBulkUsers({ fids: [parseInt(identifier)] })
+      user = response.users?.[0]
+    } else {
+      // Fetch by username
+      const response = await client.lookupUserByUsername({ username: identifier })
+      user = response.user
+    }
+
+    if (!user) {
+      console.log('[Farcaster API] User not found:', identifier)
+      return null
+    }
+
+    // Parse Twitter verification from connected accounts
+    let twitterHandle: string | undefined
+    if (user.verified_accounts) {
+      const twitterAccount = user.verified_accounts.find(
+        (acc: any) => acc.platform === 'twitter' || acc.platform === 'x'
+      )
+      if (twitterAccount) {
+        twitterHandle = twitterAccount.username
+      }
+    }
+
+    // Extract wallet addresses from verified_addresses
+    const walletAddresses: string[] = []
+    
+    // Priority 1: Verified Ethereum addresses
+    if (user.verified_addresses?.eth_addresses && Array.isArray(user.verified_addresses.eth_addresses)) {
+      walletAddresses.push(...user.verified_addresses.eth_addresses)
+    }
+    
+    // Priority 2: Custody address (Farcaster's managed wallet)
+    if (user.custody_address && !walletAddresses.includes(user.custody_address)) {
+      walletAddresses.push(user.custody_address)
+    }
+    
+    // Priority 3: Check verifications array for wallet addresses
+    if (user.verifications && Array.isArray(user.verifications)) {
+      user.verifications.forEach((addr: string) => {
+        if (addr && addr.startsWith('0x') && !walletAddresses.includes(addr)) {
+          walletAddresses.push(addr)
+        }
+      })
+    }
+    
+    console.log('[Farcaster API] Wallet addresses found:', walletAddresses)
+
+    return {
+      fid: user.fid,
+      username: user.username,
+      displayName: user.display_name || user.username,
+      pfp: {
+        url: user.pfp_url || '',
+      },
+      profile: {
+        bio: {
+          text: user.profile?.bio?.text || '',
+        },
+      },
+      verifications: user.verified_addresses?.eth_addresses || [],
+      walletAddresses: walletAddresses.length > 0 ? walletAddresses : undefined,
+      connectedAccounts: {
+        twitter: twitterHandle,
+      },
+    }
+  } catch (error) {
+    console.error('Error fetching Farcaster profile with SDK:', error)
+    // Fallback to public API
+    return await fetchFarcasterProfilePublic(identifier)
+  }
+}
+
+/**
+ * Fetch Farcaster profile using public API (no SDK)
+ * Fallback when NEYNAR_API_KEY is not available
+ */
+async function fetchFarcasterProfilePublic(identifier: string): Promise<FarcasterProfile | null> {
   try {
     // Check if identifier is FID (numeric) or username
     const isFID = /^\d+$/.test(identifier)
@@ -167,7 +280,7 @@ export async function fetchFarcasterProfileWarpcast(username: string): Promise<P
 }
 
 /**
- * Fetch Farcaster users by wallet addresses (bulk)
+ * Fetch Farcaster users by wallet addresses (bulk) using Neynar SDK
  * Useful for finding Farcaster profiles from wallet addresses
  */
 export async function fetchFarcasterByWallets(walletAddresses: string[]): Promise<FarcasterProfile[]> {
@@ -176,46 +289,50 @@ export async function fetchFarcasterByWallets(walletAddresses: string[]): Promis
       return []
     }
 
-    const addressesParam = walletAddresses.join(',')
-    const response = await fetch(
-      `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${addressesParam}`,
-      {
-        headers: {
-          'accept': 'application/json',
-          'api_key': process.env.NEYNAR_API_KEY || '',
-        },
+    const client = getNeynarClient()
+    
+    if (!client) {
+      console.warn('[Farcaster API] Cannot fetch by wallets - SDK not initialized')
+      return []
+    }
+
+    // Use SDK's bulk user by verification endpoint
+    const response = await client.fetchBulkUsersByEthOrSolAddress({
+      addresses: walletAddresses,
+    })
+
+    if (!response || Object.keys(response).length === 0) {
+      return []
+    }
+
+    // Response is a map of address -> user array
+    const allUsers: FarcasterProfile[] = []
+    
+    Object.values(response).forEach((users: any) => {
+      if (Array.isArray(users)) {
+        users.forEach((user: any) => {
+          allUsers.push({
+            fid: user.fid,
+            username: user.username,
+            displayName: user.display_name || user.username,
+            pfp: {
+              url: user.pfp_url || '',
+            },
+            profile: {
+              bio: {
+                text: user.profile?.bio?.text || '',
+              },
+            },
+            verifications: user.verified_addresses?.eth_addresses || [],
+            walletAddresses: user.verified_addresses?.eth_addresses || [],
+          })
+        })
       }
-    )
+    })
 
-    if (!response.ok) {
-      console.error('Neynar bulk-by-address error:', response.status)
-      return []
-    }
-
-    const data = await response.json()
-    const users = data[walletAddresses[0]]  // Returns map of address -> user array
-
-    if (!users || users.length === 0) {
-      return []
-    }
-
-    return users.map((user: any) => ({
-      fid: user.fid,
-      username: user.username,
-      displayName: user.display_name || user.username,
-      pfp: {
-        url: user.pfp_url || '',
-      },
-      profile: {
-        bio: {
-          text: user.profile?.bio?.text || '',
-        },
-      },
-      verifications: user.verified_addresses?.eth_addresses || [],
-      walletAddresses: user.verified_addresses?.eth_addresses || [],
-    }))
+    return allUsers
   } catch (error) {
-    console.error('Error fetching Farcaster by wallets:', error)
+    console.error('Error fetching Farcaster by wallets with SDK:', error)
     return []
   }
 }

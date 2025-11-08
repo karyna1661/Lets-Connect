@@ -18,7 +18,6 @@ export function QRCodeDisplay({ profile }: QRCodeDisplayProps) {
     x: profile.x,
     instagram: profile.instagram,
     github: profile.github,
-    facebook: profile.facebook,
     youtube: profile.youtube,
     website: profile.website,
     farcaster: profile.farcaster,
