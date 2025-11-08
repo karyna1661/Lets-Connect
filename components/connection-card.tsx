@@ -32,7 +32,7 @@ const getSocialUrl = (platform: string, username: string) => {
     youtube: username.startsWith("http") ? username : `https://youtube.com/${username}`,
     tiktok: username.startsWith("http") ? username : `https://tiktok.com/@${username.replace("@", "")}`,
     telegram: username.startsWith("http") ? username : `https://t.me/${username.replace("@", "")}`,
-    farcaster: username.startsWith("http") ? username : `https://warpcast.com/${username.replace("@", "")}`,
+    farcaster: username.startsWith("http") ? username : `https://farcaster.xyz/${username.replace("@", "")}`,
     website: username.startsWith("http") ? username : `https://${username}`,
     email: `mailto:${username}`,
   }

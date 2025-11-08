@@ -20,7 +20,7 @@ export async function syncFromFarcaster(farcasterUsername: string): Promise<Soci
   try {
     const cleanUsername = farcasterUsername.replace('@', '')
     
-    // Try with API key first (Neynar), fallback to public Warpcast API
+    // Try with API key first (Neynar), fallback to public Farcaster API
     let profile = await fetchFarcasterProfile(cleanUsername)
     
     if (!profile) {

@@ -229,14 +229,14 @@ async function fetchFarcasterProfilePublic(identifier: string): Promise<Farcaste
 }
 
 /**
- * Alternative: Fetch using Warpcast API directly (no API key needed)
+ * Alternative: Fetch using Farcaster public API directly (no API key needed)
  */
 export async function fetchFarcasterProfileWarpcast(username: string): Promise<Partial<FarcasterProfile> | null> {
   try {
     const cleanUsername = username.replace('@', '')
     
-    // Use the public Warpcast API
-    const response = await fetch(`https://client.warpcast.com/v2/user-by-username?username=${cleanUsername}`)
+    // Use the public Farcaster API (formerly Warpcast)
+    const response = await fetch(`https://client.farcaster.xyz/v2/user-by-username?username=${cleanUsername}`)
     
     if (!response.ok) {
       return null
@@ -274,7 +274,7 @@ export async function fetchFarcasterProfileWarpcast(username: string): Promise<P
       walletAddresses: walletAddresses.length > 0 ? walletAddresses : undefined,
     }
   } catch (error) {
-    console.error('Error fetching Farcaster profile from Warpcast:', error)
+    console.error('Error fetching Farcaster profile from Farpcast:', error)
     return null
   }
 }

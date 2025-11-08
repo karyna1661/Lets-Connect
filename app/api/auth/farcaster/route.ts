@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     // Farcaster Sign In With Farcaster (SIWF)
-    const authUrl = `https://warpcast.com/~/signin?client_id=${FARCASTER_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
+    const authUrl = `https://farcaster.xyz/~/signin?client_id=${FARCASTER_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
     
     return NextResponse.redirect(authUrl)
   }
