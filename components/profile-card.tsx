@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Save, User, MapPin, Briefcase, Heart, Globe2, Instagram, Linkedin, Twitter, Github, Mail, Zap, Youtube } from "lucide-react"
 import { FlipCard } from "@/components/flip-card-simple"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
@@ -25,9 +25,9 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
   const [isFullScreen, setIsFullScreen] = useState(false)
 
   // Update editedProfile when profile prop changes (after save)
-  useState(() => {
+  useEffect(() => {
     setEditedProfile(profile)
-  })
+  }, [profile])
 
   const handleChange = (updates: Partial<Profile>) => {
     setEditedProfile((prev) => ({ ...prev, ...updates }))

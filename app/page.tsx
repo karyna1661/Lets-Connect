@@ -42,6 +42,7 @@ import { NavCard } from "@/components/nav-card"
 import { DevconnectEventCard } from "@/components/devconnect-event-card"
 import { QRCodeSVG } from "qrcode.react"
 import { getUserPOAPs } from "./actions/poaps"
+import { syncFromFarcaster } from "./actions/social-sync"
 
 const SocialIcons = {
   instagram: Instagram,
@@ -58,6 +59,7 @@ const SocialIcons = {
 export default function LetsConnect() {
   const { ready, authenticated, user: privyUser, logout } = usePrivy()
   const { wallets } = useWallets()
+  const farcasterUsername: string = typeof (privyUser as any)?.farcaster?.username === 'string' ? ((privyUser as any).farcaster.username as string) : ""
   
   const [view, setView] = useState("home")
   const [profile, setProfile] = useState<Profile>({
@@ -78,6 +80,7 @@ export default function LetsConnect() {
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null)
   const [connections, setConnections] = useState<Connection[]>([])
   const [poaps, setPoaps] = useState<any[]>([])
+  const [hasAutoSyncedFarcaster, setHasAutoSyncedFarcaster] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({})
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
@@ -139,13 +142,35 @@ export default function LetsConnect() {
 
   let supabase = null
 
+  // Initialize and check auth when Privy is ready
   useEffect(() => {
-    if (ready && authenticated && privyUser) {
+    if (ready) {
       checkAuth()
-    } else if (ready && !authenticated) {
-      setIsLoading(false)
     }
   }, [ready, authenticated, privyUser])
+
+  useEffect(() => {
+    // Auto-sync Farcaster once immediately after Privy login with Farcaster
+    if (ready && authenticated && farcasterUsername && !hasAutoSyncedFarcaster) {
+      (async () => {
+        try {
+          if (farcasterUsername) {
+            const result = await syncFromFarcaster(farcasterUsername)
+            if (result.success && result.data) {
+              setProfile(prev => ({ ...prev, ...result.data }))
+              // Refresh POAPs after wallet is set
+              const p = privyUser?.id ? await getUserPOAPs(privyUser.id) : []
+              setPoaps(p)
+            }
+          }
+        } catch (e) {
+          console.error("[Auto Farcaster Sync] Error:", e)
+        } finally {
+          setHasAutoSyncedFarcaster(true)
+        }
+      })()
+    }
+  }, [ready, authenticated, farcasterUsername, hasAutoSyncedFarcaster])
 
   const checkAuth = async () => {
     if (!privyUser) {
@@ -253,13 +278,26 @@ export default function LetsConnect() {
         return
       }
 
+      // Show immediate success feedback
+      toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
+      
+      // Add connection in background
       await addConnection(privyUser.id, scannedProfile)
+      
+      // Reload data and navigate
       await loadData(privyUser.id)
-      setView("connections")
-      toast.success(`Connected with ${scannedProfile.name}!`)
+      
+      // Small delay for smooth transition
+      setTimeout(() => {
+        setView("connections")
+      }, 500)
     } catch (error) {
       console.error("[v0] Error adding connection:", error)
-      toast.error("Failed to add connection. Please try again.")
+      toast.error("Connection saved but encountered an error. Check your connections.")
+      // Still navigate to show the connection was saved
+      setTimeout(() => {
+        setView("connections")
+      }, 1000)
     }
   }
 
@@ -597,22 +635,10 @@ export default function LetsConnect() {
             </p>
             <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_address} onSyncComplete={async () => {
               if (privyUser?.id) {
-                const p = await getUserPOAPs(privyUser.id)
+                const p = privyUser?.id ? await getUserPOAPs(privyUser.id) : []
                 setPoaps(p)
               }
             }} />
-            {poaps.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {poaps.map((poap, idx) => (
-                  <div key={idx} className="flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-3">
-                    {poap.image_url && (
-                      <img src={poap.image_url} alt={poap.event_name} className="w-16 h-16 rounded-lg object-cover" />
-                    )}
-                    <span className="mt-2 text-xs text-white/80 text-center line-clamp-2">{poap.event_name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
 
           </div>
         </div>

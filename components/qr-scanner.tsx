@@ -32,6 +32,13 @@ export function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
         (decodedText) => {
           try {
             const profile = JSON.parse(decodedText) as Profile
+            // Validate that it has required fields
+            if (!profile.user_id || !profile.name) {
+              const errorMsg = "Invalid QR code - missing user information"
+              setError(errorMsg)
+              if (onScanError) onScanError(errorMsg)
+              return
+            }
             onScanSuccess(profile)
             stopScanning()
           } catch (err) {

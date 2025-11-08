@@ -10,21 +10,29 @@ const SocialIcons = {
   instagram: Instagram,
   linkedin: Linkedin,
   twitter: Twitter,
+  x: Twitter,
   github: Github,
   facebook: Facebook,
   youtube: Youtube,
   website: Globe,
   email: Mail,
+  farcaster: Globe,
+  telegram: Globe,
+  tiktok: Globe,
 }
 
 const getSocialUrl = (platform: string, username: string) => {
   const urls: Record<string, string> = {
     instagram: `https://instagram.com/${username.replace("@", "")}`,
     twitter: `https://twitter.com/${username.replace("@", "")}`,
-    linkedin: username.startsWith("http") ? username : `https://${username}`,
+    x: `https://twitter.com/${username.replace("@", "")}`,
+    linkedin: username.startsWith("http") ? username : `https://linkedin.com/in/${username}`,
     github: username.startsWith("http") ? username : `https://github.com/${username.replace("@", "")}`,
     facebook: username.startsWith("http") ? username : `https://facebook.com/${username}`,
-    youtube: `https://youtube.com/${username}`,
+    youtube: username.startsWith("http") ? username : `https://youtube.com/${username}`,
+    tiktok: username.startsWith("http") ? username : `https://tiktok.com/@${username.replace("@", "")}`,
+    telegram: username.startsWith("http") ? username : `https://t.me/${username.replace("@", "")}`,
+    farcaster: username.startsWith("http") ? username : `https://warpcast.com/${username.replace("@", "")}`,
     website: username.startsWith("http") ? username : `https://${username}`,
     email: `mailto:${username}`,
   }
@@ -111,7 +119,7 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
 
         <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(connection.connection_data)
-            .filter(([key]) => ["instagram", "twitter", "linkedin", "github", "email", "website"].includes(key))
+            .filter(([key]) => ["instagram", "twitter", "x", "linkedin", "github", "email", "website", "farcaster"].includes(key))
             .filter(([_, value]) => value)
             .slice(0, 4)
             .map(([key, value]) => {
@@ -127,7 +135,7 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition-colors text-xs font-medium shadow-sm"
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  <span className="capitalize">{key}</span>
+                  <span className="capitalize">{key === "x" ? "X" : key}</span>
                 </a>
               )
             })}
@@ -162,17 +170,63 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
       />
 
       <div className="relative z-10 flex-1 flex flex-col">
+        {/* Profile Header */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center shadow-lg">
-            <StickyNote className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-white text-lg font-bold tracking-tight">Notes</h3>
-            <p className="text-gray-400 text-xs">About {connection.connection_data.name?.split(" ")[0]}</p>
+          <Avatar className="w-12 h-12 border-2 border-white/20">
+            <AvatarImage
+              src={connection.connection_data.profile_image || undefined}
+              alt={connection.connection_data.name}
+            />
+            <AvatarFallback className="bg-white text-black text-sm font-bold">
+              {connection.connection_data.name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2) || "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <h3 className="text-white text-lg font-bold tracking-tight">{connection.connection_data.name}</h3>
+            {connection.connection_data.role && (
+              <p className="text-gray-400 text-xs">{connection.connection_data.role}</p>
+            )}
           </div>
         </div>
 
-        <div className="flex-1 mb-4">
+        {/* Social Links Section */}
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Connect on Social</p>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(connection.connection_data)
+              .filter(([key]) => ["instagram", "twitter", "x", "linkedin", "github", "email", "farcaster", "telegram", "tiktok", "youtube"].includes(key))
+              .filter(([_, value]) => value)
+              .map(([key, value]) => {
+                const Icon = SocialIcons[key as keyof typeof SocialIcons] || Globe
+                return (
+                  <a
+                    key={key}
+                    href={getSocialUrl(key, value as string)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all text-white text-xs font-medium flip-card-button"
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="capitalize truncate">{key === "x" ? "X (Twitter)" : key}</span>
+                  </a>
+                )
+              })}
+          </div>
+        </div>
+
+        {/* Notes Section */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <StickyNote className="w-4 h-4 text-white" />
+            <p className="text-xs font-semibold text-white uppercase tracking-wide">Private Notes</p>
+          </div>
+          
           <textarea
             value={notes}
             onChange={(e) => {
@@ -180,14 +234,15 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
               handleNotesChange(e.target.value)
             }}
             onClick={(e) => e.stopPropagation()}
-            placeholder="Add notes about this connection... Where did you meet? What did you discuss?"
-            className="w-full h-full min-h-[120px] bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent resize-none"
+            placeholder="Add private notes about this connection..."
+            className="flex-1 min-h-[80px] bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl px-3 py-2 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent resize-none text-sm"
             style={{
               boxShadow: "inset 0 2px 8px rgba(0,0,0,0.2)",
             }}
           />
         </div>
 
+        {/* Save Button */}
         {hasChanges && (
           <button
             onClick={(e) => {
@@ -195,15 +250,15 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
               handleSave()
             }}
             disabled={isSavingNotes}
-            className="w-full py-3 bg-black text-white rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg flip-card-button"
+            className="w-full mt-3 py-2.5 bg-white text-black rounded-xl font-bold hover:bg-gray-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg flip-card-button"
           >
-            <Save className="w-5 h-5" />
+            <Save className="w-4 h-4" />
             {isSavingNotes ? "Saving..." : "Save Notes"}
           </button>
         )}
 
         {!hasChanges && (
-          <div className="text-center py-3">
+          <div className="text-center py-2 mt-3">
             <span className="text-xs font-semibold text-gray-500">Tap card to flip back</span>
           </div>
         )}
