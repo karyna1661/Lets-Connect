@@ -16,8 +16,8 @@ export function PrivyAuthForm() {
         <Card className="bg-white border-2 border-black rounded-3xl shadow-2xl">
           <CardContent className="pt-6 pb-6">
             <div className="text-center">
-              <div className="relative w-16 h-16 mx-auto mb-4">
-                <div className="absolute inset-0 rounded-full border-4 border-black animate-spin"></div>
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <img src="/icon-512.jpg" alt="Loading" className="w-full h-full rounded-full animate-spin" style={{ animationDuration: '2s' }} />
               </div>
               <p className="text-black font-bold text-lg">Loading...</p>
             </div>

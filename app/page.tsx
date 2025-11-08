@@ -471,14 +471,7 @@ export default function LetsConnect() {
                     </div>
                   </div>
                 }
-                onClick={() => {
-                  if (!profile.name) {
-                    toast.error("Please complete your profile first")
-                    setView("profile")
-                    return
-                  }
-                  setView("qr")
-                }}
+                onClick={() => setView("qr")}
               />
             </div>
 
