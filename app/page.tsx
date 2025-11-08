@@ -39,6 +39,7 @@ import { toast } from "sonner"
 import { ConnectionCard } from "@/components/connection-card"
 import { ProfileCard } from "@/components/profile-card"
 import { NavCard } from "@/components/nav-card"
+import { DevconnectEventCard } from "@/components/devconnect-event-card"
 import { QRCodeSVG } from "qrcode.react"
 
 const SocialIcons = {
@@ -437,22 +438,7 @@ export default function LetsConnect() {
             </div>
 
             <div className="w-full relative" style={{ minHeight: '280px' }}>
-              <NavCard
-                icon={Calendar}
-                title="Events"
-                description="Find attendees"
-                backTitle="Browse Events"
-                backDescription="See events around you and who's attending"
-                ctaLabel="Browse Events"
-                backExtra={
-                  <div className="flex justify-center">
-                    <div className="px-4 py-2 bg-white/10 border border-white/20 rounded-full">
-                      <span className="text-xs text-white/80">Upcoming events</span>
-                    </div>
-                  </div>
-                }
-                onClick={() => (window.location.href = "/events")}
-              />
+              <DevconnectEventCard />
             </div>
 
             <div className="w-full relative" style={{ minHeight: '280px' }}>
