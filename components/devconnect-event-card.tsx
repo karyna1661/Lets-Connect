@@ -16,10 +16,10 @@ export function DevconnectEventCard() {
       >
         {/* Front - DEVCONNECT Image */}
         <div
-          className={`absolute inset-0 backface-hidden ${isFlipped ? "hidden" : "block"}`}
+          className={`absolute inset-0 backface-hidden group ${isFlipped ? "hidden" : "block"}`}
           style={{ minHeight: '280px' }}
         >
-          <div className="relative w-full h-full rounded-3xl overflow-hidden border-2 border-black shadow-[0_0_0_1px_rgba(0,0,0,1),0_8px_24px_rgba(0,0,0,0.1)]">
+          <div className="relative w-full h-full rounded-3xl overflow-hidden border-2 border-black shadow-[0_0_0_1px_rgba(0,0,0,1),0_8px_24px_rgba(0,0,0,0.1)] hover:shadow-[0_0_0_1px_rgba(0,0,0,1),0_12px_32px_rgba(0,0,0,0.15)] transition-shadow duration-300">
             {/* DEVCONNECT Image Cover */}
             <div className="absolute inset-0">
               <Image
@@ -31,8 +31,8 @@ export function DevconnectEventCard() {
               />
             </div>
 
-            {/* Tap to Continue Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-6">
+            {/* Tap to Continue Overlay - Shows on hover (desktop) or always (mobile) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-6 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
               <div className="bg-white border-2 border-black px-4 py-2 rounded-full shadow-lg hover:bg-gray-100 transition-all">
                 <span className="text-sm font-bold text-black">Tap to continue →</span>
               </div>
