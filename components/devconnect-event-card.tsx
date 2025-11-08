@@ -36,7 +36,7 @@ export function DevconnectEventCard() {
             className="object-cover"
             priority
             style={{
-              objectPosition: 'center center'
+              objectPosition: 'center 45%'  // Shifted down slightly to show the T
             }}
           />
         </div>

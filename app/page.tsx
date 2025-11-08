@@ -622,7 +622,12 @@ export default function LetsConnect() {
         {profile.name && (
           <div className="mt-6 text-center">
             <div className="text-2xl font-bold text-white">{profile.name}</div>
-            <div className="text-gray-300">{profile.bio}</div>
+            {profile.bio && <div className="text-gray-300 mb-2">{profile.bio}</div>}
+            {profile.farcaster && (
+              <div className="text-purple-400 text-sm font-semibold">
+                {profile.farcaster}
+              </div>
+            )}
           </div>
         )}
       </div>
