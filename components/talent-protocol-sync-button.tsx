@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sparkles, Check, AlertCircle, Loader2 } from "lucide-react"
+import { Check, AlertCircle, Loader2 } from "lucide-react"
+import { TalentProtocolIcon } from "@/components/icons/talent-protocol-icon"
 import { useWallets } from '@privy-io/react-auth'
 import { syncFromTalentProtocol } from "@/app/actions/social-sync"
 import { toast } from "sonner"
@@ -72,7 +73,7 @@ export function TalentProtocolSyncButton({ onSyncComplete, disabled, compact }: 
     if (isSyncing) {
       return (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-5 h-5 animate-spin" />
           Syncing...
         </>
       )
@@ -81,7 +82,7 @@ export function TalentProtocolSyncButton({ onSyncComplete, disabled, compact }: 
     if (syncStatus === 'success') {
       return (
         <>
-          <Check className="w-4 h-4" />
+          <Check className="w-5 h-5" />
           Synced!
         </>
       )
@@ -90,7 +91,7 @@ export function TalentProtocolSyncButton({ onSyncComplete, disabled, compact }: 
     if (syncStatus === 'error') {
       return (
         <>
-          <AlertCircle className="w-4 h-4" />
+          <AlertCircle className="w-5 h-5" />
           Sync Failed
         </>
       )
@@ -99,7 +100,7 @@ export function TalentProtocolSyncButton({ onSyncComplete, disabled, compact }: 
     if (walletAddress) {
       return (
         <>
-          <Check className="w-4 h-4" />
+          <Check className="w-5 h-5" />
           Wallet Connected
         </>
       )
@@ -107,7 +108,7 @@ export function TalentProtocolSyncButton({ onSyncComplete, disabled, compact }: 
 
     return (
       <>
-        <Sparkles className="w-4 h-4" />
+        <TalentProtocolIcon className="w-5 h-5" />
         Connect Talent
       </>
     )
@@ -120,7 +121,7 @@ export function TalentProtocolSyncButton({ onSyncComplete, disabled, compact }: 
         handleAutoSync()
       }}
       disabled={disabled || isSyncing || !walletAddress}
-      className={`w-full py-3.5 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation`}
+      className={`w-full py-3.5 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg active:scale-95 touch-manipulation`}
     >
       {getButtonContent()}
     </button>

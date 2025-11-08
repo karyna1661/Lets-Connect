@@ -19,6 +19,7 @@ export interface Profile {
   is_discoverable?: boolean
   location_sharing?: "off" | "city" | "precise"
   wallet_hash?: string
+  wallet_address?: string  // Ethereum wallet address from Farcaster/Privy
   created_at?: string
   updated_at?: string
   // New social fields from ConnectProfile

@@ -16,6 +16,7 @@ export interface FarcasterProfile {
     }
   }
   verifications: string[]
+  walletAddresses?: string[]  // Ethereum wallet addresses
   connectedAccounts?: {
     twitter?: string
   }
@@ -66,6 +67,16 @@ export async function fetchFarcasterProfile(identifier: string): Promise<Farcast
       }
     }
 
+    // Extract wallet addresses from verified_addresses
+    const walletAddresses: string[] = []
+    if (user.verified_addresses?.eth_addresses) {
+      walletAddresses.push(...user.verified_addresses.eth_addresses)
+    }
+    // Also check custody_address (Farcaster's managed wallet)
+    if (user.custody_address) {
+      walletAddresses.push(user.custody_address)
+    }
+
     return {
       fid: user.fid,
       username: user.username,
@@ -79,6 +90,7 @@ export async function fetchFarcasterProfile(identifier: string): Promise<Farcast
         },
       },
       verifications: user.verified_addresses?.eth_addresses || [],
+      walletAddresses: walletAddresses.length > 0 ? walletAddresses : undefined,
       connectedAccounts: {
         twitter: twitterHandle,
       },
@@ -110,6 +122,15 @@ export async function fetchFarcasterProfileWarpcast(username: string): Promise<P
       return null
     }
 
+    // Extract wallet addresses from verifications
+    const walletAddresses: string[] = []
+    if (user.verifications) {
+      walletAddresses.push(...user.verifications)
+    }
+    if (user.custodyAddress) {
+      walletAddresses.push(user.custodyAddress)
+    }
+
     return {
       fid: user.fid,
       username: user.username,
@@ -123,6 +144,7 @@ export async function fetchFarcasterProfileWarpcast(username: string): Promise<P
         },
       },
       verifications: user.verifications || [],
+      walletAddresses: walletAddresses.length > 0 ? walletAddresses : undefined,
     }
   } catch (error) {
     console.error('Error fetching Farcaster profile from Warpcast:', error)

@@ -7,13 +7,14 @@ import type { Profile } from "@/lib/types"
 export interface SocialSyncResult {
   success: boolean
   data?: Partial<Profile>
+  walletAddress?: string  // Wallet address from Farcaster/Talent
   source: 'farcaster' | 'talent_protocol' | 'combined'
   error?: string
 }
 
 /**
  * Sync profile data from Farcaster
- * Fetches: name, pfp, bio, and Twitter handle if connected
+ * Fetches: name, pfp, bio, Twitter handle, and wallet addresses
  */
 export async function syncFromFarcaster(farcasterUsername: string): Promise<SocialSyncResult> {
   try {
@@ -47,9 +48,16 @@ export async function syncFromFarcaster(farcasterUsername: string): Promise<Soci
       syncedData.twitter = `@${profile.connectedAccounts.twitter}`
     }
 
+    // Extract primary wallet address
+    const walletAddress = profile.walletAddresses?.[0]
+    if (walletAddress) {
+      syncedData.wallet_address = walletAddress
+    }
+
     return {
       success: true,
       data: syncedData,
+      walletAddress: walletAddress,
       source: 'farcaster',
     }
   } catch (error) {

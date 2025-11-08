@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MessageCircle, Check, AlertCircle, Loader2 } from "lucide-react"
+import { Check, AlertCircle, Loader2 } from "lucide-react"
+import { FarcasterIcon } from "@/components/icons/farcaster-icon"
 import { usePrivy } from '@privy-io/react-auth'
 import { syncFromFarcaster } from "@/app/actions/social-sync"
 import { toast } from "sonner"
@@ -39,7 +40,13 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
         setSyncStatus('success')
         onSyncComplete(result.data)
         setHasSynced(true)
-        toast.success(`Synced from Farcaster!`)
+        
+        // Show success message with wallet info if available
+        if (result.walletAddress) {
+          toast.success(`Synced from Farcaster! Wallet detected: ${result.walletAddress.slice(0, 6)}...${result.walletAddress.slice(-4)}`)
+        } else {
+          toast.success(`Synced from Farcaster!`)
+        }
         
         setTimeout(() => setSyncStatus('idle'), 3000)
       } else {
@@ -58,8 +65,10 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
   }
 
   const handleConnect = () => {
-    // Open Privy login with Farcaster pre-selected
-    login()
+    // Open Privy login directly with Farcaster (skip selection screen)
+    login({
+      loginMethods: ['farcaster']
+    })
   }
 
   const getButtonColor = () => {
@@ -72,7 +81,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     if (isSyncing) {
       return (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-5 h-5 animate-spin" />
           Syncing...
         </>
       )
@@ -81,7 +90,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     if (syncStatus === 'success') {
       return (
         <>
-          <Check className="w-4 h-4" />
+          <Check className="w-5 h-5" />
           Synced!
         </>
       )
@@ -90,7 +99,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     if (syncStatus === 'error') {
       return (
         <>
-          <AlertCircle className="w-4 h-4" />
+          <AlertCircle className="w-5 h-5" />
           Sync Failed
         </>
       )
@@ -99,7 +108,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     if (user?.farcaster?.username) {
       return (
         <>
-          <Check className="w-4 h-4" />
+          <Check className="w-5 h-5" />
           Connected
         </>
       )
@@ -107,7 +116,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
 
     return (
       <>
-        <MessageCircle className="w-4 h-4" />
+        <FarcasterIcon className="w-5 h-5" />
         Connect Farcaster
       </>
     )
@@ -124,7 +133,7 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
         }
       }}
       disabled={disabled || isSyncing}
-      className={`w-full py-3.5 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation`}
+      className={`w-full py-3.5 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg active:scale-95 touch-manipulation`}
     >
       {getButtonContent()}
     </button>

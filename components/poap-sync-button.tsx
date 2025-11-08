@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Zap, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { POAPIcon } from "@/components/icons/poap-icon"
 import { useWallets } from '@privy-io/react-auth'
 import { syncPOAPsFromAPI, getUserPOAPs } from "@/app/actions/poaps"
 import { linkWallet } from "@/app/actions/wallets"
@@ -21,11 +22,11 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
   const privyWallet = wallets[0]?.address
 
   const handleSync = async () => {
-    // Priority: Privy wallet > current wallet
+    // Priority: Privy wallet > current wallet from profile
     const walletToSync = privyWallet || currentWallet
     
     if (!walletToSync) {
-      toast.error("Please connect a wallet first")
+      toast.error("No wallet found. Please sync with Farcaster first to get your wallet address.")
       return
     }
 
@@ -60,12 +61,12 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-5 h-5 animate-spin" />
           Syncing...
         </>
       ) : (
         <>
-          <Zap className="w-4 h-4" />
+          <POAPIcon className="w-5 h-5" />
           Sync POAP
         </>
       )}
