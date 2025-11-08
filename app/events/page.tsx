@@ -126,7 +126,7 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-white p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-black">Events</h1>
           <button
@@ -183,22 +183,23 @@ export default function EventsPage() {
 
         {/* Always show DEVCONNECT card for upcoming, then other events */}
         {showUpcoming && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="w-full" style={{ minHeight: '280px' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-fr">
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
               <DevconnectEventCard />
             </div>
             
             {events.map((event) => (
-              <EventCard
-                key={event.id}
-                eventName={event.name}
-                eventDate={event.event_date}
-                city={event.city}
-                attendeeCount={event.attendee_count || 0}
-                imageUrl={event.image_url}
-                isPast={!showUpcoming}
-                onViewAttendees={() => handleViewAttendees(event.id)}
-              />
+              <div key={event.id} className="w-full relative" style={{ minHeight: '280px' }}>
+                <EventCard
+                  eventName={event.name}
+                  eventDate={event.event_date}
+                  city={event.city}
+                  attendeeCount={event.attendee_count || 0}
+                  imageUrl={event.image_url}
+                  isPast={!showUpcoming}
+                  onViewAttendees={() => handleViewAttendees(event.id)}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -212,18 +213,19 @@ export default function EventsPage() {
               <p className="text-gray-600">No past events</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-fr">
               {events.map((event) => (
-                <EventCard
-                  key={event.id}
-                  eventName={event.name}
-                  eventDate={event.event_date}
-                  city={event.city}
-                  attendeeCount={event.attendee_count || 0}
-                  imageUrl={event.image_url}
-                  isPast={!showUpcoming}
-                  onViewAttendees={() => handleViewAttendees(event.id)}
-                />
+                <div key={event.id} className="w-full relative" style={{ minHeight: '280px' }}>
+                  <EventCard
+                    eventName={event.name}
+                    eventDate={event.event_date}
+                    city={event.city}
+                    attendeeCount={event.attendee_count || 0}
+                    imageUrl={event.image_url}
+                    isPast={!showUpcoming}
+                    onViewAttendees={() => handleViewAttendees(event.id)}
+                  />
+                </div>
               ))}
             </div>
           )
