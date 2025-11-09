@@ -139,7 +139,7 @@ export function FlipCard({
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            transform: "rotateY(180deg) scaleX(-1)",
+            transform: "rotateY(180deg)",
             zIndex: isFlipped ? 2 : 1,
           }}
           data-side="back"
