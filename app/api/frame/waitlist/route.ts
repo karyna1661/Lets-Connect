@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     <html>
       <head>
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="https://placehold.co/1200x630?text=Join+Waitlist" />
+        <meta property="fc:frame:image" content="${origin}/placeholder.svg" />
         <meta property="fc:frame:button:1" content="Join waitlist" />
         <meta property="fc:frame:post_url" content="${postUrl}" />
       </head>
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       <html>
         <head>
           <meta property="fc:frame" content="vNext" />
-          <meta property="fc:frame:image" content="https://placehold.co/1200x630?text=You're+on+the+waitlist!" />
+          <meta property="fc:frame:image" content="${origin}/placeholder.svg" />
           <meta property="fc:frame:button:1" content="Share" />
           <meta property="fc:frame:button:1:action" content="link" />
           <meta property="fc:frame:button:1:target" content="${origin}" />
