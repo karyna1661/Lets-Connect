@@ -20,6 +20,8 @@ export default function WaitlistPage() {
   }>>([])
   const [isJoining, setIsJoining] = useState(false)
   const [hasJoined, setHasJoined] = useState(false)
+  const [alreadyJoined, setAlreadyJoined] = useState(false)
+  const [joinedDate, setJoinedDate] = useState<string | null>(null)
 
   useEffect(() => {
     // Get Farcaster context and signal ready
@@ -30,6 +32,11 @@ export default function WaitlistPage() {
         // Call ready immediately after getting context
         await sdk.actions.ready()
         console.log("SDK ready called successfully")
+        
+        // Check if user already joined
+        if (ctx?.user?.fid) {
+          checkIfAlreadyJoined(ctx.user.fid)
+        }
       } catch (e) {
         console.error("SDK init error:", e)
         // Still try to call ready even if context fails
@@ -42,6 +49,20 @@ export default function WaitlistPage() {
     }
     init()
   }, [])
+
+  const checkIfAlreadyJoined = async (fid: number) => {
+    try {
+      const res = await fetch(`/api/waitlist/check?fid=${fid}`)
+      const data = await res.json()
+      if (data.joined) {
+        setAlreadyJoined(true)
+        setHasJoined(true)
+        setJoinedDate(data.joined_at)
+      }
+    } catch (e) {
+      console.error("Failed to check join status", e)
+    }
+  }
 
   useEffect(() => {
     // Fetch waitlist count
@@ -81,6 +102,10 @@ export default function WaitlistPage() {
       return
     }
 
+    if (alreadyJoined) {
+      return // Already joined, button disabled
+    }
+
     console.log("Full SDK context:", context)
     console.log("User object:", context.user)
 
@@ -110,6 +135,8 @@ export default function WaitlistPage() {
 
       if (res.ok) {
         setHasJoined(true)
+        setAlreadyJoined(true)
+        setJoinedDate(new Date().toISOString())
         // Refresh count
         const countRes = await fetch("/api/waitlist/count")
         const countData = await countRes.json()
@@ -117,7 +144,15 @@ export default function WaitlistPage() {
       } else {
         const errorData = await res.json()
         console.error("Join failed:", errorData)
-        alert("Failed to join waitlist")
+        
+        // Check if already joined error
+        if (errorData.alreadyJoined) {
+          setAlreadyJoined(true)
+          setHasJoined(true)
+          setJoinedDate(errorData.joined_at)
+        } else {
+          alert("Failed to join waitlist")
+        }
       }
     } catch (e) {
       console.error("Join error:", e)
@@ -199,7 +234,9 @@ export default function WaitlistPage() {
         disabled={isJoining || hasJoined}
         className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isJoining ? "Joining..." : hasJoined ? "✓ Joined!" : "Join waitlist"}
+        {isJoining ? "Joining..." : alreadyJoined ? (
+          joinedDate ? `✓ Joined ${new Date(joinedDate).toLocaleDateString()}` : "✓ Already Joined!"
+        ) : "Join waitlist"}
       </button>
     </div>
   )

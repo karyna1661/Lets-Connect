@@ -21,6 +21,21 @@ export async function POST(req: NextRequest) {
 
     const supabase = createClient(supabaseUrl, serviceKey)
 
+    // First check if already joined
+    const { data: existing } = await supabase
+      .from("waitlist")
+      .select("fid, joined_at")
+      .eq("fid", fid)
+      .single()
+
+    if (existing) {
+      return NextResponse.json({ 
+        alreadyJoined: true, 
+        joined_at: existing.joined_at,
+        message: "You've already joined the waitlist!" 
+      }, { status: 200 })
+    }
+
     // Collect all wallet addresses (verified ETH addresses + custody address)
     const ethAddresses: string[] = Array.isArray(verifiedEthAddresses) ? verifiedEthAddresses : []
     const allAddresses = Array.from(new Set([...ethAddresses, ...(custodyAddress ? [custodyAddress] : [])]))
