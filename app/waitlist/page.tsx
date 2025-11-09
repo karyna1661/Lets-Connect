@@ -73,63 +73,60 @@ export default function WaitlistPage() {
   )
 
   const back = (
-    <div
-      className="w-full rounded-3xl h-full p-6 flex flex-col relative overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
-      }}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-white text-lg font-bold">Your social on the waitlist</h2>
-        <div className="w-40" onClick={(e) => e.stopPropagation()}>
-          <FarcasterSyncButton
-            onSyncComplete={() => {}}
-          />
-        </div>
+    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-6 flex flex-col">
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-white text-xl font-bold mb-2">Friends on the waitlist</h2>
+        <p className="text-gray-400 text-sm">See who from your network has joined</p>
       </div>
 
-
-      {friends.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-          No friends detected yet. Connect Farcaster to see more.
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-4">
-          {friends.slice(0, 12).map((f) => (
-            <div key={f.fid} className="text-center">
-              <Avatar className="w-16 h-16 mx-auto mb-2 border-2 border-white/20">
-                <AvatarImage src={f.profile?.pfp?.url || undefined} alt={f.profile?.displayName || f.profile?.username || String(f.fid)} />
-                <AvatarFallback className="bg-white text-black text-sm font-bold">
-                  {(f.profile?.displayName || f.profile?.username || "?")
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <p className="text-white text-xs font-semibold line-clamp-1">{f.profile?.displayName || f.profile?.username || f.fid}</p>
-              <p className="text-gray-400 text-[10px]">Joined {new Date(f.joined_at).toLocaleDateString()}</p>
+      {/* Friends Grid or Connect Prompt */}
+      <div className="flex-1 overflow-auto mb-6">
+        {!user?.farcaster?.username ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <p className="text-gray-400 text-sm mb-4">Connect Farcaster to see your friends</p>
+            <div onClick={(e) => e.stopPropagation()}>
+              <FarcasterSyncButton onSyncComplete={() => {}} />
             </div>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-6">
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            window.location.href = "/api/frame/waitlist"
-          }}
-          className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2 flip-card-button"
-        >
-          Join waitlist on Farcaster
-        </button>
+          </div>
+        ) : friends.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-400 text-sm">None of your friends have joined yet. Be the first!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            {friends.slice(0, 9).map((f) => (
+              <div key={f.fid} className="flex flex-col items-center">
+                <Avatar className="w-14 h-14 mb-1.5 border-2 border-white/10">
+                  <AvatarImage src={f.profile?.pfp?.url} alt={f.profile?.displayName || f.profile?.username || String(f.fid)} />
+                  <AvatarFallback className="bg-white text-black text-xs font-bold">
+                    {(f.profile?.displayName || f.profile?.username || "?")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-white text-[10px] font-medium line-clamp-1">
+                  {f.profile?.displayName || f.profile?.username || f.fid}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="text-center py-2 mt-3">
-        <span className="text-xs font-semibold text-gray-500">Tap card to flip back</span>
-      </div>
+      {/* CTA Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          window.location.href = "/api/frame/waitlist"
+        }}
+        className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg"
+      >
+        Join waitlist
+      </button>
     </div>
   )
 
