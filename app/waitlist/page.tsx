@@ -57,7 +57,7 @@ export default function WaitlistPage() {
     <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border border-gray-200/50 h-full overflow-hidden p-8 flex flex-col items-center justify-center text-center">
       <img src="/icon-192.jpg" alt="Let's Connect" className="w-24 h-24 rounded-2xl border border-black shadow mb-4" />
       <h1 className="text-2xl font-bold text-gray-900">Your social life, one scan away</h1>
-      <p className="text-gray-600 mt-1">Your digital handshake</p>
+      <p className="text-gray-600 mt-1">Be one of the first 100 to unlock the digital handshake.</p>
       <div className="mt-3">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black text-white shadow">
           <span className="font-semibold">Current waitlist</span>
@@ -115,14 +115,16 @@ export default function WaitlistPage() {
         </div>
       )}
 
-      <div className="mt-6 flex justify-center">
-        <a
-          href="/api/frame/waitlist"
-          onClick={(e) => e.stopPropagation()}
-          className="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold shadow-lg border border-white/20"
+      <div className="mt-6">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            window.location.href = "/api/frame/waitlist"
+          }}
+          className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2 flip-card-button"
         >
           Join waitlist on Farcaster
-        </a>
+        </button>
       </div>
 
       <div className="text-center py-2 mt-3">
