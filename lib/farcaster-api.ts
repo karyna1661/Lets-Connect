@@ -336,3 +336,105 @@ export async function fetchFarcasterByWallets(walletAddresses: string[]): Promis
     return []
   }
 }
+
+/**
+ * Fetch following FIDs for a given user
+ */
+export async function fetchFollowingFids(fid: number): Promise<number[]> {
+  try {
+    const url = `https://api.neynar.com/v2/farcaster/user/following?fid=${fid}&limit=150`
+    const res = await fetch(url, {
+      headers: {
+        accept: 'application/json',
+        api_key: process.env.NEYNAR_API_KEY || '',
+      },
+    })
+    if (!res.ok) {
+      console.error('Neynar following API error:', res.status, res.statusText)
+      return []
+    }
+    const data = await res.json()
+    const users = data.users || data.result?.users || []
+    return users
+      .map((u: any) => u.fid)
+      .filter((n: any) => typeof n === 'number')
+  } catch (e) {
+    console.error('Error fetching following fids:', e)
+    return []
+  }
+}
+
+/**
+ * Fetch multiple Farcaster profiles by FIDs (bulk)
+ */
+export async function fetchProfilesByFids(fids: number[]): Promise<FarcasterProfile[]> {
+  try {
+    if (!fids || fids.length === 0) {
+      return []
+    }
+
+    const client = getNeynarClient()
+    let users: any[] = []
+
+    if (client) {
+      const resp = await client.fetchBulkUsers({ fids })
+      users = resp.users || []
+    } else {
+      // Public API fallback
+      const url = `https://api.neynar.com/v2/farcaster/user/bulk?fids=${fids.join(',')}`
+      const res = await fetch(url, {
+        headers: {
+          accept: 'application/json',
+          api_key: process.env.NEYNAR_API_KEY || '',
+        },
+      })
+      if (!res.ok) {
+        console.error('Neynar bulk users API error:', res.status, res.statusText)
+        return []
+      }
+      const data = await res.json()
+      users = data.users || []
+    }
+
+    return users.map((user: any) => {
+      const walletAddresses: string[] = []
+      if (user.verified_addresses?.eth_addresses && Array.isArray(user.verified_addresses.eth_addresses)) {
+        walletAddresses.push(...user.verified_addresses.eth_addresses)
+      }
+      if (user.custody_address && !walletAddresses.includes(user.custody_address)) {
+        walletAddresses.push(user.custody_address)
+      }
+      if (user.verifications && Array.isArray(user.verifications)) {
+        user.verifications.forEach((addr: string) => {
+          if (addr && addr.startsWith('0x') && !walletAddresses.includes(addr)) {
+            walletAddresses.push(addr)
+          }
+        })
+      }
+
+      let twitterHandle: string | undefined
+      if (user.verified_accounts) {
+        const twitterAccount = user.verified_accounts.find(
+          (acc: any) => acc.platform === 'twitter' || acc.platform === 'x'
+        )
+        if (twitterAccount) {
+          twitterHandle = twitterAccount.username
+        }
+      }
+
+      return {
+        fid: user.fid,
+        username: user.username,
+        displayName: user.display_name || user.username,
+        pfp: { url: user.pfp_url || '' },
+        profile: { bio: { text: user.profile?.bio?.text || '' } },
+        verifications: user.verified_addresses?.eth_addresses || [],
+        walletAddresses: walletAddresses.length > 0 ? walletAddresses : undefined,
+        connectedAccounts: { twitter: twitterHandle },
+      } as FarcasterProfile
+    })
+  } catch (e) {
+    console.error('Error bulk fetching profiles by fids:', e)
+    return []
+  }
+}
