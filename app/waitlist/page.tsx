@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react"
 import { FlipCard } from "@/components/flip-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { FarcasterSyncButton } from "@/components/farcaster-sync-button"
-import { usePrivy } from "@privy-io/react-auth"
 import { sdk } from "@farcaster/miniapp-sdk"
 
 export const metadata = {
@@ -29,7 +27,7 @@ export const metadata = {
 
 
 export default function WaitlistPage() {
-  const { user } = usePrivy()
+  const [context, setContext] = useState<any | null>(null)
   const [count, setCount] = useState<number>(0)
   const [friends, setFriends] = useState<Array<{
     fid: number
@@ -40,10 +38,21 @@ export default function WaitlistPage() {
     } | null
     joined_at: string
   }>>([])
+  const [isJoining, setIsJoining] = useState(false)
+  const [hasJoined, setHasJoined] = useState(false)
 
   useEffect(() => {
-    // Signal to Farcaster that the app is ready
-    sdk.actions.ready().catch((e) => console.error("SDK ready error:", e))
+    // Get Farcaster context and signal ready
+    const init = async () => {
+      try {
+        const ctx = await sdk.context
+        setContext(ctx)
+        await sdk.actions.ready()
+      } catch (e) {
+        console.error("SDK init error:", e)
+      }
+    }
+    init()
   }, [])
 
   useEffect(() => {
@@ -55,12 +64,11 @@ export default function WaitlistPage() {
   }, [])
 
   useEffect(() => {
-    // Fetch friends who joined the waitlist if Farcaster connected
+    // Fetch friends who joined the waitlist if we have context
     const loadFriends = async () => {
+      if (!context?.user?.fid) return
       try {
-        const username = user?.farcaster?.username
-        if (!username) return
-        const res = await fetch(`/api/waitlist/friends?username=${encodeURIComponent(username)}`)
+        const res = await fetch(`/api/waitlist/friends?fid=${context.user.fid}`)
         const data = await res.json()
         setFriends((data.friends ?? []).map((f: any) => ({
           fid: f.fid,
@@ -77,7 +85,45 @@ export default function WaitlistPage() {
       }
     }
     loadFriends()
-  }, [user?.farcaster?.username])
+  }, [context?.user?.fid])
+
+  const handleJoinWaitlist = async () => {
+    if (!context?.user) {
+      alert("Unable to get user info")
+      return
+    }
+
+    setIsJoining(true)
+    try {
+      const res = await fetch("/api/waitlist/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fid: context.user.fid,
+          username: context.user.username,
+          displayName: context.user.displayName,
+          pfpUrl: context.user.pfpUrl,
+          verifications: context.user.verifications || [],
+          custodyAddress: context.user.custodyAddress,
+        }),
+      })
+
+      if (res.ok) {
+        setHasJoined(true)
+        // Refresh count
+        const countRes = await fetch("/api/waitlist/count")
+        const countData = await countRes.json()
+        setCount(countData.count ?? 0)
+      } else {
+        alert("Failed to join waitlist")
+      }
+    } catch (e) {
+      console.error("Join error:", e)
+      alert("An error occurred")
+    } finally {
+      setIsJoining(false)
+    }
+  }
 
   const front = (
     <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border-2 border-gray-200 h-full overflow-hidden p-8 flex flex-col items-center justify-center text-center shadow-xl">
@@ -108,14 +154,7 @@ export default function WaitlistPage() {
 
       {/* Friends Grid or Connect Prompt */}
       <div className="flex-1 overflow-auto mb-6">
-        {!user?.farcaster?.username ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <p className="text-gray-400 text-sm mb-4">Connect Farcaster to see your friends</p>
-            <div onClick={(e) => e.stopPropagation()}>
-              <FarcasterSyncButton onSyncComplete={() => {}} />
-            </div>
-          </div>
-        ) : friends.length === 0 ? (
+        {friends.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-400 text-sm">None of your friends have joined yet. Be the first!</p>
           </div>
@@ -147,11 +186,12 @@ export default function WaitlistPage() {
       <button
         onClick={(e) => {
           e.stopPropagation()
-          window.location.href = "/api/frame/waitlist"
+          handleJoinWaitlist()
         }}
-        className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg"
+        disabled={isJoining || hasJoined}
+        className="w-full py-3 bg-white text-black rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Join waitlist
+        {isJoining ? "Joining..." : hasJoined ? "✓ Joined!" : "Join waitlist"}
       </button>
     </div>
   )
