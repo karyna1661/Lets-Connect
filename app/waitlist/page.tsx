@@ -5,8 +5,7 @@ import { FlipCard } from "@/components/flip-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FarcasterSyncButton } from "@/components/farcaster-sync-button"
 import { usePrivy } from "@privy-io/react-auth"
-import { fetchFarcasterProfile } from "@/lib/farcaster-api"
-const CAP = 500
+
 
 export default function WaitlistPage() {
   const { user } = usePrivy()
@@ -35,10 +34,7 @@ export default function WaitlistPage() {
       try {
         const username = user?.farcaster?.username
         if (!username) return
-        const prof = await fetchFarcasterProfile(username)
-        const fid = prof?.fid
-        if (!fid) return
-        const res = await fetch(`/api/waitlist/friends?fid=${fid}`)
+        const res = await fetch(`/api/waitlist/friends?username=${encodeURIComponent(username)}`)
         const data = await res.json()
         setFriends((data.friends ?? []).map((f: any) => ({
           fid: f.fid,

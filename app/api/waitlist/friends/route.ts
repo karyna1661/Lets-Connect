@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
-import { fetchFollowingFids, fetchProfilesByFids } from "@/lib/farcaster-api"
+import { fetchFollowingFids, fetchProfilesByFids, fetchFarcasterProfile } from "@/lib/farcaster-api"
 
 export async function GET(req: NextRequest) {
   const fidParam = req.nextUrl.searchParams.get("fid")
-  const fid = fidParam ? parseInt(fidParam, 10) : NaN
+  const username = req.nextUrl.searchParams.get("username")
+  let fid = fidParam ? parseInt(fidParam, 10) : NaN
+
+  if ((!fid || Number.isNaN(fid)) && username) {
+    const prof = await fetchFarcasterProfile(username)
+    fid = prof?.fid ?? NaN
+  }
 
   if (!fid || Number.isNaN(fid)) {
-    return NextResponse.json({ error: "Missing or invalid fid" }, { status: 400 })
+    return NextResponse.json({ error: "Missing or invalid fid/username" }, { status: 400 })
   }
 
   // 1) Get following fids
