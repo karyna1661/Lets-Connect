@@ -5,6 +5,27 @@ import { FlipCard } from "@/components/flip-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FarcasterSyncButton } from "@/components/farcaster-sync-button"
 import { usePrivy } from "@privy-io/react-auth"
+import { sdk } from "@farcaster/miniapp-sdk"
+
+export const metadata = {
+  title: "Let's Connect Waitlist",
+  other: {
+    "fc:miniapp": JSON.stringify({
+      version: "1",
+      imageUrl: "https://connectwithme-app.vercel.app/icon-512.jpg",
+      button: {
+        title: "🚩 Join Waitlist",
+        action: {
+          type: "launch_frame",
+          name: "Let's Connect Waitlist",
+          url: "https://connectwithme-app.vercel.app/waitlist",
+          splashImageUrl: "https://connectwithme-app.vercel.app/icon-512.jpg",
+          splashBackgroundColor: "#FFFFFF"
+        }
+      }
+    })
+  }
+}
 
 
 export default function WaitlistPage() {
@@ -19,6 +40,11 @@ export default function WaitlistPage() {
     } | null
     joined_at: string
   }>>([])
+
+  useEffect(() => {
+    // Signal to Farcaster that the app is ready
+    sdk.actions.ready().catch((e) => console.error("SDK ready error:", e))
+  }, [])
 
   useEffect(() => {
     // Fetch waitlist count
@@ -54,7 +80,7 @@ export default function WaitlistPage() {
   }, [user?.farcaster?.username])
 
   const front = (
-    <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border border-gray-200/50 h-full overflow-hidden p-8 flex flex-col items-center justify-center text-center">
+    <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border-2 border-gray-200 h-full overflow-hidden p-8 flex flex-col items-center justify-center text-center shadow-xl">
       <img src="/icon-192.jpg" alt="Let's Connect" className="w-24 h-24 rounded-2xl border border-black shadow mb-4" />
       <h1 className="text-2xl font-bold text-gray-900">Your social life, one scan away</h1>
       <p className="text-gray-600 mt-1">Be one of the first 100 to unlock the digital handshake.</p>
@@ -73,7 +99,7 @@ export default function WaitlistPage() {
   )
 
   const back = (
-    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-6 flex flex-col">
+    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl border-2 border-gray-700 p-6 flex flex-col shadow-xl">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-white text-xl font-bold mb-2">Friends on the waitlist</h2>

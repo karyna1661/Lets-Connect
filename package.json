@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@farcaster/miniapp-sdk": "^0.2.1",
     "@hookform/resolvers": "^3.10.0",
     "@neynar/nodejs-sdk": "^3.83.0",
     "@privy-io/react-auth": "^3.6.0",
