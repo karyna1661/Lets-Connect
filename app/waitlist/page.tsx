@@ -81,6 +81,18 @@ export default function WaitlistPage() {
       return
     }
 
+    console.log("Full SDK context:", context)
+    console.log("User object:", context.user)
+
+    // Extract verified addresses from SDK context
+    const verifiedEthAddresses = context.user.verifiedAddresses?.ethAddresses || 
+                                  context.user.verified_addresses?.eth_addresses || 
+                                  []
+    const custodyAddress = context.user.custodyAddress || context.user.custody_address || null
+
+    console.log("Verified ETH addresses:", verifiedEthAddresses)
+    console.log("Custody address:", custodyAddress)
+
     setIsJoining(true)
     try {
       const res = await fetch("/api/waitlist/join", {
@@ -91,8 +103,8 @@ export default function WaitlistPage() {
           username: context.user.username,
           displayName: context.user.displayName,
           pfpUrl: context.user.pfpUrl,
-          verifications: context.user.verifications || [],
-          custodyAddress: context.user.custodyAddress,
+          verifiedEthAddresses: verifiedEthAddresses,
+          custodyAddress: custodyAddress,
         }),
       })
 
@@ -103,6 +115,8 @@ export default function WaitlistPage() {
         const countData = await countRes.json()
         setCount(countData.count ?? 0)
       } else {
+        const errorData = await res.json()
+        console.error("Join failed:", errorData)
         alert("Failed to join waitlist")
       }
     } catch (e) {
