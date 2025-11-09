@@ -82,7 +82,6 @@ export function FlipCard({
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onClick={handleMouseUp}
       onTouchEnd={(e) => {
         e.preventDefault()
         handleMouseUp(e as unknown as React.MouseEvent)
