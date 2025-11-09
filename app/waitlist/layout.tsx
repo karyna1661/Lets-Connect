@@ -1,6 +1,17 @@
 export const metadata = {
   title: "Let's Connect Waitlist",
+  description: "Be one of the first 100 to unlock the digital handshake",
+  openGraph: {
+    title: "Let's Connect Waitlist",
+    description: "Your social life, one scan away",
+    images: ["https://connectwithme-app.vercel.app/icon-512.jpg"],
+  },
   other: {
+    "fc:frame": "vNext",
+    "fc:frame:image": "https://connectwithme-app.vercel.app/icon-512.jpg",
+    "fc:frame:button:1": "🚩 Join Waitlist",
+    "fc:frame:button:1:action": "link",
+    "fc:frame:button:1:target": "https://connectwithme-app.vercel.app/waitlist",
     "fc:miniapp": JSON.stringify({
       version: "1",
       imageUrl: "https://connectwithme-app.vercel.app/icon-512.jpg",

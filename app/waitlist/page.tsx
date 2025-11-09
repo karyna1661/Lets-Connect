@@ -133,7 +133,13 @@ export default function WaitlistPage() {
   )
 
   const back = (
-    <div className="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl border-2 border-gray-700 p-6 flex flex-col shadow-xl">
+    <div 
+      className="w-full h-full rounded-3xl border-2 border-gray-700 p-6 flex flex-col shadow-xl"
+      style={{
+        background: "linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%)",
+        backgroundColor: "#111827"
+      }}
+    >
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-white text-xl font-bold mb-2">Friends on the waitlist</h2>
