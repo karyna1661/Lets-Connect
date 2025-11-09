@@ -1,0 +1,9 @@
+{
+  "name": "Let's Connect Waitlist",
+  "iconUrl": "https://connectwithme-app.vercel.app/icon-192.jpg",
+  "splashImageUrl": "https://connectwithme-app.vercel.app/icon-512.jpg",
+  "splashBackgroundColor": "#FFFFFF",
+  "homeUrl": "https://connectwithme-app.vercel.app/waitlist",
+  "description": "Join the waitlist to be one of the first 100 to unlock the digital handshake. Your social life, one scan away.",
+  "version": "1.0.0"
+}

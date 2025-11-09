@@ -55,7 +55,7 @@ export default function WaitlistPage() {
 
   const front = (
     <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border border-gray-200/50 h-full overflow-hidden p-8 flex flex-col items-center justify-center text-center">
-      <img src="/icon-512.jpg" alt="Let's Connect" className="w-24 h-24 rounded-2xl border border-black shadow mb-4" />
+      <img src="/icon-192.jpg" alt="Let's Connect" className="w-24 h-24 rounded-2xl border border-black shadow mb-4" />
       <h1 className="text-2xl font-bold text-gray-900">Your social life, one scan away</h1>
       <p className="text-gray-600 mt-1">Be one of the first 100 to unlock the digital handshake.</p>
       <div className="mt-3">
