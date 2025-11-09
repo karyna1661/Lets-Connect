@@ -5,26 +5,6 @@ import { FlipCard } from "@/components/flip-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { sdk } from "@farcaster/miniapp-sdk"
 
-export const metadata = {
-  title: "Let's Connect Waitlist",
-  other: {
-    "fc:miniapp": JSON.stringify({
-      version: "1",
-      imageUrl: "https://connectwithme-app.vercel.app/icon-512.jpg",
-      button: {
-        title: "🚩 Join Waitlist",
-        action: {
-          type: "launch_frame",
-          name: "Let's Connect Waitlist",
-          url: "https://connectwithme-app.vercel.app/waitlist",
-          splashImageUrl: "https://connectwithme-app.vercel.app/icon-512.jpg",
-          splashBackgroundColor: "#FFFFFF"
-        }
-      }
-    })
-  }
-}
-
 
 export default function WaitlistPage() {
   const [context, setContext] = useState<any | null>(null)
@@ -47,9 +27,17 @@ export default function WaitlistPage() {
       try {
         const ctx = await sdk.context
         setContext(ctx)
+        // Call ready immediately after getting context
         await sdk.actions.ready()
+        console.log("SDK ready called successfully")
       } catch (e) {
         console.error("SDK init error:", e)
+        // Still try to call ready even if context fails
+        try {
+          await sdk.actions.ready()
+        } catch (readyError) {
+          console.error("SDK ready error:", readyError)
+        }
       }
     }
     init()
