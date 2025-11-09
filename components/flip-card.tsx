@@ -153,7 +153,7 @@ export function FlipCard({
               }}
             />
           )}
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center" style={{ transform: "scaleX(-1)" }}>
             {back}
           </div>
         </div>
