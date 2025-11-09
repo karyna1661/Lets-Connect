@@ -139,7 +139,7 @@ export function FlipCard({
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
+            transform: "rotateY(180deg) scaleX(-1)",
             zIndex: isFlipped ? 2 : 1,
           }}
           data-side="back"
@@ -153,7 +153,7 @@ export function FlipCard({
               }}
             />
           )}
-          <div className="w-full h-full flex items-center justify-center" style={{ transform: "scaleX(-1)" }}>
+          <div className="w-full h-full flex items-center justify-center">
             {back}
           </div>
         </div>
