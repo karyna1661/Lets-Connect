@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     <html>
       <head>
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="${origin}/placeholder.svg" />
+        <meta property="fc:frame:image" content="${origin}/icon-512.jpg" />
         <meta property="fc:frame:button:1" content="Join waitlist" />
         <meta property="fc:frame:post_url" content="${postUrl}" />
       </head>
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       <html>
         <head>
           <meta property="fc:frame" content="vNext" />
-          <meta property="fc:frame:image" content="${origin}/placeholder.svg" />
+          <meta property="fc:frame:image" content="${origin}/icon-512.jpg" />
           <meta property="fc:frame:button:1" content="Share" />
           <meta property="fc:frame:button:1:action" content="link" />
           <meta property="fc:frame:button:1:target" content="${origin}" />
