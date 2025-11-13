@@ -5,9 +5,7 @@ import { Save, User, MapPin, Briefcase, Heart, Globe2, Instagram, Linkedin, Twit
 import { FlipCard } from "@/components/flip-card-simple"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
 import { POAPSyncButton } from "@/components/poap-sync-button"
-import { SocialOAuthConnect } from "@/components/social-oauth-connect"
 import { FarcasterSyncButton } from "@/components/farcaster-sync-button"
-import { TalentProtocolSyncButton } from "@/components/talent-protocol-sync-button"
 import type { Profile } from "@/lib/types"
 
 interface ProfileCardProps {
@@ -15,11 +13,13 @@ interface ProfileCardProps {
   userId: string
   onSave: (profile: Profile) => void
   isSaving?: boolean
+  poaps?: any[]
+  onPoapSync?: () => void
 }
 
 const roles = ["Developer", "Designer", "Founder", "Student", "Investor", "Creator", "Other"]
 
-export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardProps) {
+export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onPoapSync }: ProfileCardProps) {
   const [editedProfile, setEditedProfile] = useState<Profile>(profile)
   const [hasChanges, setHasChanges] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -41,8 +41,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
 
   const frontContent = (
     <div
-      className="relative w-full bg-white rounded-3xl border-2 border-black h-full overflow-hidden p-6 cursor-pointer"
-      onClick={() => setIsFullScreen(true)}
+      className="relative w-full bg-white rounded-3xl border-2 border-black h-auto p-6 flex flex-col"
       style={{
         boxShadow: `0 0 0 1px rgba(0,0,0,1), 0 8px 24px rgba(0,0,0,0.1)`
       }}
@@ -112,42 +111,75 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
           })}
         </div>
 
-        {/* Quick Sync Actions */}
-        <div className="space-y-2 mt-4 pt-4 border-t-2 border-black">
-          <p className="text-xs font-bold text-black uppercase tracking-wide mb-3">Quick Setup</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            <FarcasterSyncButton
-              onSyncComplete={(data) => {
-                handleChange(data)
-              }}
-              disabled={isSaving}
-              compact
-            />
-            <TalentProtocolSyncButton
-              onSyncComplete={(data) => {
-                handleChange(data)
-              }}
-              disabled={isSaving}
-              compact
-            />
-          </div>
-          
-          {/* Wallet Address Display */}
-          {editedProfile.wallet_address && (
-            <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+        {/* Wallet Address Display - Moved above Quick Setup */}
+        {editedProfile.wallet_address && (
+          <div className="mt-4 pt-4 border-t-2 border-black">
+            <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
               <p className="text-xs font-semibold text-purple-900 mb-1">Wallet Connected</p>
               <p className="text-xs font-mono text-purple-700 truncate">
                 {editedProfile.wallet_address.slice(0, 6)}...{editedProfile.wallet_address.slice(-4)}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* POAPs Display Section */}
+        {poaps && poaps.length > 0 && (
+          <div className="mt-4 pt-4 border-t-2 border-black">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-bold text-black uppercase tracking-wide">POAPs</p>
+              <span className="text-xs font-semibold text-black bg-purple-100 px-2 py-1 rounded-full">
+                {poaps.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-6 gap-2">
+              {poaps.map((poap, idx) => (
+                <div key={idx} className="flex-shrink-0">
+                  <img
+                    src={poap.image_url}
+                    alt={poap.event_name}
+                    className="w-full aspect-square rounded-xl object-cover border-2 border-black"
+                    title={poap.event_name}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Quick Sync Actions */}
+        <div className="space-y-2 mt-4 pt-4 border-t-2 border-black" onClick={(e) => e.stopPropagation()}>
+          <p className="text-xs font-bold text-black uppercase tracking-wide mb-3">Quick Setup</p>
+          <div onClick={(e) => e.stopPropagation()}>
+            <FarcasterSyncButton
+              onSyncComplete={(data) => {
+                handleChange(data)
+              }}
+              disabled={isSaving}
+              currentFarcaster={editedProfile.farcaster}
+              compact
+            />
+          </div>
+          
+          {/* POAP Sync Button */}
+          {editedProfile.wallet_address && onPoapSync && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <POAPSyncButton 
+                userId={userId} 
+                currentWallet={editedProfile.wallet_address}
+                onSyncComplete={onPoapSync}
+                compact
+              />
+            </div>
           )}
           
-          <p className="text-xs text-gray-600 mt-2 text-center leading-relaxed">Sync to auto-fill 90% of your profile</p>
+          <p className="text-xs text-gray-600 mt-2 text-center leading-relaxed">Sync from Farcaster to auto-fill your profile</p>
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-        <div className="bg-white border border-black px-3 py-1.5 rounded-full">
+      {/* Tap to edit button - fixed at bottom of card */}
+      <div className="pt-4 flex justify-center cursor-pointer" onClick={() => setIsFullScreen(true)}>
+        <div className="bg-white border border-black px-3 py-1.5 rounded-full shadow-lg">
           <span className="text-xs font-semibold text-black">Tap to edit →</span>
         </div>
       </div>
@@ -309,6 +341,20 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
             </div>
           </div>
 
+          {/* Wallet Address Section */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
+            <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+              <Zap className="w-3.5 h-3.5" />
+              Wallet Address
+            </label>
+            <div className="bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5">
+              <p className="text-white text-xs font-mono break-all">
+                {editedProfile.wallet_address || "No wallet connected"}
+              </p>
+              <p className="text-gray-500 text-[10px] mt-1">Auto-imported from Farcaster or wallet connection</p>
+            </div>
+          </div>
+
           {/* Social Links & Web3 Section */}
           <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
             <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
@@ -316,101 +362,43 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
               Social & Web3 Profiles
             </label>
             
-            <div className="space-y-4">
-              {/* OAuth-enabled platforms */}
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-purple-300 mb-2 flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
-                  Verified OAuth Connections
-                </p>
-                
-                <div className="grid grid-cols-1 gap-2">
-                  <SocialOAuthConnect
-                    platform="x"
-                    currentValue={editedProfile.x}
-                    onConnect={(username) => handleChange({ x: username })}
-                    disabled={isSaving}
-                  />
-
-                  <SocialOAuthConnect
-                    platform="github"
-                    currentValue={editedProfile.github}
-                    onConnect={(username) => handleChange({ github: username })}
-                    disabled={isSaving}
-                  />
-
-                  <SocialOAuthConnect
-                    platform="linkedin"
-                    currentValue={editedProfile.linkedin}
-                    onConnect={(username) => handleChange({ linkedin: username })}
-                    disabled={isSaving}
-                  />
-
-                  <SocialOAuthConnect
-                    platform="instagram"
-                    currentValue={editedProfile.instagram}
-                    onConnect={(username) => handleChange({ instagram: username })}
-                    disabled={isSaving}
-                  />
-
-                  <SocialOAuthConnect
-                    platform="tiktok"
-                    currentValue={editedProfile.tiktok}
-                    onConnect={(username) => handleChange({ tiktok: username })}
-                    disabled={isSaving}
-                  />
-
-                  <SocialOAuthConnect
-                    platform="telegram"
-                    currentValue={editedProfile.telegram}
-                    onConnect={(username) => handleChange({ telegram: username })}
-                    disabled={isSaving}
-                  />
-
-                  <SocialOAuthConnect
-                    platform="farcaster"
-                    currentValue={editedProfile.farcaster}
-                    onConnect={(username) => handleChange({ farcaster: username })}
-                    disabled={isSaving}
-                  />
-                </div>
-              </div>
-
-              {/* Manual entry platforms */}
-              <div className="pt-3 border-t border-white/10">
-                <p className="text-xs font-medium text-gray-300 mb-3">Manual Entry</p>
-                <div className="space-y-2">
-                  {[
-                    { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
-                    { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
-                    { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
-                    { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
-                    { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
-                    { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
-                  ].map((social) => {
-                    const Icon = social.icon
-                    return (
-                      <div key={social.key} className="group">
-                        <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
-                        <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
-                          <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <input
-                            type="text"
-                            value={(editedProfile[social.key as keyof Profile] as string) || ""}
-                            onChange={(e) => {
-                              e.stopPropagation()
-                              handleChange({ [social.key]: e.target.value })
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            placeholder={social.placeholder}
-                            className="flex-1 bg-transparent border-none text-white text-xs placeholder:text-gray-600 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+            <div className="space-y-2">
+              {[
+                { key: "x", icon: Twitter, placeholder: "@username", label: "X (Twitter)" },
+                { key: "github", icon: Github, placeholder: "username", label: "GitHub" },
+                { key: "linkedin", icon: Linkedin, placeholder: "linkedin.com/in/username", label: "LinkedIn" },
+                { key: "instagram", icon: Instagram, placeholder: "@username", label: "Instagram" },
+                { key: "farcaster", icon: User, placeholder: "@username", label: "Farcaster" },
+                { key: "telegram", icon: Mail, placeholder: "@username", label: "Telegram" },
+                { key: "tiktok", icon: Globe2, placeholder: "@username", label: "TikTok" },
+                { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
+                { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
+                { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
+                { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
+                { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
+                { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
+              ].map((social) => {
+                const Icon = social.icon
+                return (
+                  <div key={social.key} className="group">
+                    <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
+                    <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
+                      <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <input
+                        type="text"
+                        value={(editedProfile[social.key as keyof Profile] as string) || ""}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          handleChange({ [social.key]: e.target.value })
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder={social.placeholder}
+                        className="flex-1 bg-transparent border-none text-white text-xs placeholder:text-gray-600 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -588,6 +576,20 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
                   </div>
                 </div>
 
+                {/* Wallet Address Section */}
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
+                  <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5" />
+                    Wallet Address
+                  </label>
+                  <div className="bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5">
+                    <p className="text-white text-xs font-mono break-all">
+                      {editedProfile.wallet_address || "No wallet connected"}
+                    </p>
+                    <p className="text-gray-500 text-[10px] mt-1">Auto-imported from Farcaster or wallet connection</p>
+                  </div>
+                </div>
+
                 {/* Social Links & Web3 Section */}
                 <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
                   <label className="block text-xs font-semibold text-gray-300 mb-3 uppercase tracking-wider flex items-center gap-2">
@@ -595,91 +597,39 @@ export function ProfileCard({ profile, userId, onSave, isSaving }: ProfileCardPr
                     Social & Web3 Profiles
                   </label>
                   
-                  <div className="space-y-4">
-                    {/* OAuth-enabled platforms */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-purple-300 mb-2 flex items-center gap-1">
-                        <Zap className="w-3 h-3" />
-                        Verified OAuth Connections
-                      </p>
-                      
-                      <div className="grid grid-cols-1 gap-2">
-                        <SocialOAuthConnect
-                          platform="x"
-                          currentValue={editedProfile.x}
-                          onConnect={(username) => handleChange({ x: username })}
-                          disabled={isSaving}
-                        />
-                        <SocialOAuthConnect
-                          platform="github"
-                          currentValue={editedProfile.github}
-                          onConnect={(username) => handleChange({ github: username })}
-                          disabled={isSaving}
-                        />
-                        <SocialOAuthConnect
-                          platform="linkedin"
-                          currentValue={editedProfile.linkedin}
-                          onConnect={(username) => handleChange({ linkedin: username })}
-                          disabled={isSaving}
-                        />
-                        <SocialOAuthConnect
-                          platform="instagram"
-                          currentValue={editedProfile.instagram}
-                          onConnect={(username) => handleChange({ instagram: username })}
-                          disabled={isSaving}
-                        />
-                        <SocialOAuthConnect
-                          platform="tiktok"
-                          currentValue={editedProfile.tiktok}
-                          onConnect={(username) => handleChange({ tiktok: username })}
-                          disabled={isSaving}
-                        />
-                        <SocialOAuthConnect
-                          platform="telegram"
-                          currentValue={editedProfile.telegram}
-                          onConnect={(username) => handleChange({ telegram: username })}
-                          disabled={isSaving}
-                        />
-                        <SocialOAuthConnect
-                          platform="farcaster"
-                          currentValue={editedProfile.farcaster}
-                          onConnect={(username) => handleChange({ farcaster: username })}
-                          disabled={isSaving}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Manual entry platforms */}
-                    <div className="pt-3 border-t border-white/10">
-                      <p className="text-xs font-medium text-gray-300 mb-3">Manual Entry</p>
-                      <div className="space-y-2">
-                        {[
-                          { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
-                          { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
-                          { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
-                          { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
-                          { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
-                          { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
-                        ].map((social) => {
-                          const Icon = social.icon
-                          return (
-                            <div key={social.key} className="group">
-                              <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
-                              <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
-                                <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                <input
-                                  type="text"
-                                  value={(editedProfile[social.key as keyof Profile] as string) || ""}
-                                  onChange={(e) => handleChange({ [social.key]: e.target.value })}
-                                  placeholder={social.placeholder}
-                                  className="flex-1 bg-transparent border-none text-white text-xs placeholder:text-gray-600 focus:outline-none"
-                                />
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
+                  <div className="space-y-2">
+                    {[
+                      { key: "x", icon: Twitter, placeholder: "@username", label: "X (Twitter)" },
+                      { key: "github", icon: Github, placeholder: "username", label: "GitHub" },
+                      { key: "linkedin", icon: Linkedin, placeholder: "linkedin.com/in/username", label: "LinkedIn" },
+                      { key: "instagram", icon: Instagram, placeholder: "@username", label: "Instagram" },
+                      { key: "farcaster", icon: User, placeholder: "@username", label: "Farcaster" },
+                      { key: "telegram", icon: Mail, placeholder: "@username", label: "Telegram" },
+                      { key: "tiktok", icon: Globe2, placeholder: "@username", label: "TikTok" },
+                      { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
+                      { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
+                      { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
+                      { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
+                      { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
+                      { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
+                    ].map((social) => {
+                      const Icon = social.icon
+                      return (
+                        <div key={social.key} className="group">
+                          <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
+                          <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
+                            <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <input
+                              type="text"
+                              value={(editedProfile[social.key as keyof Profile] as string) || ""}
+                              onChange={(e) => handleChange({ [social.key]: e.target.value })}
+                              placeholder={social.placeholder}
+                              className="flex-1 bg-transparent border-none text-white text-xs placeholder:text-gray-600 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               </div>

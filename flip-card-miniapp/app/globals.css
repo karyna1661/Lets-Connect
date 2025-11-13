@@ -1,0 +1,390 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 220 91% 54%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 220 91% 54%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 220 91% 54%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 220 91% 54%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+}
+
+/* 3D Flip Card Styles */
+.perspective-1000 {
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Ensure proper centering in flip cards */
+.flip-card-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.flip-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile touch optimizations */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improved mobile tap targets */
+button, .cursor-pointer {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile card container - preserve all card styling */
+@media (max-width: 1023px) {
+  /* Ensure cards maintain their visual identity */
+  .rounded-3xl {
+    border-radius: 1.5rem;
+  }
+  
+  /* Preserve padding inside cards */
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  /* Maintain text sizing for readability */
+  .text-xl {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  /* Keep icon sizes appropriate */
+  .w-16.h-16 {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+  
+  .w-8.h-8 {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
+/* Ensure buttons in flip cards are always clickable */
+.flip-card-button {
+  z-index: 10;
+  position: relative;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.flip-card-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.flip-card-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Button styles for all flip card buttons */
+button.flex.items-center.justify-center.gap-2.px-4.py-3 {
+  z-index: 10;
+  position: relative;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  min-height: 44px;
+  min-width: 44px;
+  transition: all 0.2s ease-out;
+}
+
+button.flex.items-center.justify-center.gap-2.px-4.py-3:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+button.flex.items-center.justify-center.gap-2.px-4.py-3:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Smooth animations for mobile */
+@media (prefers-reduced-motion: no-preference) {
+  .transition-transform {
+    transition: transform 0.3s ease-out;
+  }
+  
+  .transition-opacity {
+    transition: opacity 0.3s ease-out;
+  }
+}
+
+/* Prevent text selection on mobile during flip animations */
+.flip-card-content {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Custom Scrollbar for Premium Profile Card */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.6), rgba(236, 72, 153, 0.6));
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.8), rgba(236, 72, 153, 0.8));
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.6) rgba(255, 255, 255, 0.05);
+}
+
+/* Grid layout fixes */
+.grid {
+  display: grid;
+  position: relative;
+}
+
+.auto-rows-fr {
+  grid-auto-rows: 1fr;
+}
+
+/* Ensure grid doesn't overlap with header */
+.grid > div {
+  position: relative;
+}
+
+/* Responsive grid for cards */
+.grid-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+/* Mobile: single column with consistent card sizing */
+@media (max-width: 1023px) {
+  .grid-cols-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Ensure all cards have the same width */
+  .grid > div {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Prevent cards from having different heights */
+  .auto-rows-fr {
+    grid-auto-rows: minmax(280px, auto);
+  }
+}
+
+@media (min-width: 640px) {
+  .sm\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop optimization - 3 cards per row */
+@media (min-width: 1024px) {
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-auto-rows: 1fr !important;
+  }
+  
+  /* Ensure proper spacing */
+  .gap-6 {
+    gap: 1.5rem !important;
+  }
+  
+  /* Reset any mobile flex constraints */
+  .grid > div {
+    width: auto;
+    max-width: 100%;
+  }
+  
+  .grid > .w-full {
+    flex: initial;
+    min-width: 0;
+    max-width: 100%;
+  }
+  
+  /* Ensure cards maintain consistent height in grid */
+  .auto-rows-fr {
+    grid-auto-rows: 1fr !important;
+  }
+  
+  /* Ensure card containers use full grid cell */
+  .grid > div > div {
+    height: 100%;
+  }
+}
+
+/* Gap utilities */
+.gap-6 {
+  gap: 1.5rem;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 767px) {
+  .max-w-6xl {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Ensure cards maintain full visual design on mobile */
+  .flip-card-container {
+    min-height: 280px;
+  }
+  
+  /* Preserve card shadows and borders on mobile */
+  .rounded-3xl {
+    border-radius: 1.5rem !important;
+  }
+  
+  /* Ensure gradient backgrounds render properly */
+  .bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)) !important;
+  }
+  
+  /* Maintain consistent card width */
+  .grid > div {
+    width: 100%;
+  }
+}
+
+/* Mobile layout optimization for cards */
+@media (max-width: 1023px) {
+  /* Single column layout */
+  .grid-cols-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Ensure all cards have identical width */
+  .w-full {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Consistent spacing between cards */
+  .gap-6 {
+    gap: 1rem;
+  }
+  
+  /* Ensure buttons remain fully visible and styled */
+  .flip-card-button {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  /* Preserve card borders on mobile */
+  .border,
+  .border-2,
+  .border-gray-200\/50 {
+    border-style: solid !important;
+  }
+  
+  /* Maintain card shadows on mobile - same as desktop */
+  [style*="boxShadow"] {
+    box-shadow: inherit !important;
+  }
+  
+  /* Prevent inconsistent card sizing */
+  .grid > .w-full {
+    flex: 0 0 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+}

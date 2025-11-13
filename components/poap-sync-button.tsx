@@ -5,16 +5,16 @@ import { Loader2 } from "lucide-react"
 import { POAPIcon } from "@/components/icons/poap-icon"
 import { useWallets } from '@privy-io/react-auth'
 import { syncPOAPsFromAPI, getUserPOAPs } from "@/app/actions/poaps"
-import { linkWallet } from "@/app/actions/wallets"
 import { toast } from "sonner"
 
 interface POAPSyncButtonProps {
   userId: string
   currentWallet?: string
   onSyncComplete?: () => void
+  compact?: boolean
 }
 
-export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSyncButtonProps) {
+export function POAPSyncButton({ userId, currentWallet, onSyncComplete, compact = false }: POAPSyncButtonProps) {
   const { wallets } = useWallets()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -39,13 +39,7 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
       setIsLoading(true)
       console.log('[POAP Sync Button] Starting sync for wallet:', walletToSync)
 
-      // Link wallet if new
-      if (walletToSync !== currentWallet) {
-        console.log('[POAP Sync Button] Linking new wallet')
-        await linkWallet(userId, walletToSync)
-      }
-
-      // Sync POAPs
+      // Sync POAPs directly without linking wallet (wallet_address already saved by Farcaster sync)
       console.log('[POAP Sync Button] Calling syncPOAPsFromAPI')
       const result = await syncPOAPsFromAPI(userId, walletToSync)
       console.log('[POAP Sync Button] Sync result:', result)
@@ -76,16 +70,18 @@ export function POAPSyncButton({ userId, currentWallet, onSyncComplete }: POAPSy
     <button
       onClick={handleSync}
       disabled={isLoading || (!privyWallet && !currentWallet)}
-      className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation"
+      className={`w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg active:scale-95 touch-manipulation ${
+        compact ? 'py-2.5 text-sm' : 'py-3.5'
+      }`}
     >
       {isLoading ? (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Loader2 className={`animate-spin ${compact ? 'w-4 h-4' : 'w-5 h-5'}`} />
           Syncing...
         </>
       ) : (
         <>
-          <POAPIcon className="w-5 h-5" />
+          <POAPIcon className={compact ? 'w-4 h-4' : 'w-5 h-5'} />
           Sync POAP
         </>
       )}

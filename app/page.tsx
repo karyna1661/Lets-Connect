@@ -81,6 +81,7 @@ export default function LetsConnect() {
   const [connections, setConnections] = useState<Connection[]>([])
   const [poaps, setPoaps] = useState<any[]>([])
   const [hasAutoSyncedFarcaster, setHasAutoSyncedFarcaster] = useState(false)
+  const [lastSyncedUser, setLastSyncedUser] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [editingNotes, setEditingNotes] = useState<{ [key: string]: string }>({})
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
@@ -151,38 +152,57 @@ export default function LetsConnect() {
 
   useEffect(() => {
     // Auto-sync Farcaster once immediately after Privy login with Farcaster
-    if (ready && authenticated && farcasterUsername && !hasAutoSyncedFarcaster) {
+    // Only sync if we haven't synced for this specific user yet
+    if (ready && authenticated && farcasterUsername && privyUser?.id && lastSyncedUser !== privyUser.id) {
       (async () => {
         try {
-          if (farcasterUsername) {
-            const result = await syncFromFarcaster(farcasterUsername)
-            if (result.success && result.data) {
-              const updatedProfile = { ...profile, ...result.data }
+          console.log('[Auto Sync] Starting Farcaster sync for:', farcasterUsername)
+          console.log('[Auto Sync] Privy user ID:', privyUser?.id)
+          
+          const result = await syncFromFarcaster(farcasterUsername)
+          console.log('[Auto Sync] Sync result:', result)
+          
+          if (result.success && result.data) {
+            const updatedProfile = { ...profile, ...result.data, user_id: privyUser.id }
+            console.log('[Auto Sync] Profile updated in state:', updatedProfile)
+            
+            // Auto-save the profile with wallet_address to database
+            try {
+              console.log('[Auto Sync] Calling upsertProfile')
+              const savedProfile = await upsertProfile(updatedProfile)
+              console.log('[Auto Sync] Profile saved successfully:', savedProfile)
+              console.log('[Auto Sync] Wallet address saved:', result.data.wallet_address)
+              
+              // Update local state with saved data
+              setProfile(savedProfile)
+              
+              // Mark this user as synced
+              setLastSyncedUser(privyUser.id)
+            } catch (saveError) {
+              console.error('[Auto Sync] Failed to save profile:', saveError)
+              console.error('[Auto Sync] Error details:', JSON.stringify(saveError, null, 2))
+              
+              // Still update UI even if save failed
               setProfile(updatedProfile)
-              
-              // Auto-save the profile with wallet_address to database
-              if (privyUser?.id) {
-                try {
-                  await upsertProfile({ ...updatedProfile, user_id: privyUser.id })
-                  console.log('[Auto Sync] Profile saved with wallet_address:', result.data.wallet_address)
-                } catch (saveError) {
-                  console.error('[Auto Sync] Failed to save profile:', saveError)
-                }
-              }
-              
-              // Refresh POAPs after wallet is set
-              const p = privyUser?.id ? await getUserPOAPs(privyUser.id) : []
-              setPoaps(p)
             }
+            
+            // Refresh POAPs after wallet is set
+            try {
+              const p = await getUserPOAPs(privyUser.id)
+              setPoaps(p)
+              console.log('[Auto Sync] POAPs loaded:', p.length)
+            } catch (poapError) {
+              console.error('[Auto Sync] Failed to load POAPs:', poapError)
+            }
+          } else {
+            console.error('[Auto Sync] Sync failed:', result.error)
           }
         } catch (e) {
           console.error("[Auto Farcaster Sync] Error:", e)
-        } finally {
-          setHasAutoSyncedFarcaster(true)
         }
       })()
     }
-  }, [ready, authenticated, farcasterUsername, hasAutoSyncedFarcaster])
+  }, [ready, authenticated, farcasterUsername, privyUser?.id, lastSyncedUser])
 
   const checkAuth = async () => {
     if (!privyUser) {
@@ -259,6 +279,7 @@ export default function LetsConnect() {
         location_sharing: "off",
       })
       setConnections([])
+      setLastSyncedUser(null) // Reset sync tracker on sign out
       setView("home")
       toast.success("Signed out successfully")
     } catch (error) {
@@ -602,6 +623,30 @@ export default function LetsConnect() {
                 onClick={() => setView("connections")}
               />
             </div>
+
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
+              <NavCard
+                icon={Heart}
+                title=""
+                description=""
+                backTitle=""
+                backDescription=""
+                ctaLabel=""
+                onClick={() => {}}
+              />
+            </div>
+
+            <div className="w-full relative" style={{ minHeight: '280px' }}>
+              <NavCard
+                icon={Heart}
+                title=""
+                description=""
+                backTitle=""
+                backDescription=""
+                ctaLabel=""
+                onClick={() => {}}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -631,40 +676,18 @@ export default function LetsConnect() {
           <ProfileCard
             profile={profile}
             userId={privyUser?.id || ""}
+            poaps={poaps}
+            onPoapSync={async () => {
+              if (privyUser?.id) {
+                const p = await getUserPOAPs(privyUser.id)
+                setPoaps(p)
+              }
+            }}
             onSave={async (updatedProfile) => {
               await saveProfile(updatedProfile)
             }}
             isSaving={isSavingProfile}
           />
-
-          <div className="mt-6 bg-white rounded-3xl p-6 border border-gray-200/50"
-            style={{
-              boxShadow: `
-                0 0 0 1px rgba(0,0,0,0.04),
-                0 8px 24px rgba(0,0,0,0.06)
-              `,
-            }}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">POAP Sync</h3>
-                <p className="text-xs text-gray-600">Connect your wallet</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Connect your Ethereum wallet to sync your POAP collection and unlock compatibility matching
-            </p>
-            <POAPSyncButton userId={privyUser?.id || ""} currentWallet={profile.wallet_address} onSyncComplete={async () => {
-              if (privyUser?.id) {
-                const p = privyUser?.id ? await getUserPOAPs(privyUser.id) : []
-                setPoaps(p)
-              }
-            }} />
-
-          </div>
         </div>
       </div>
     )

@@ -12,20 +12,15 @@ interface FarcasterSyncButtonProps {
   onSyncComplete: (data: Partial<Profile>) => void
   disabled?: boolean
   compact?: boolean
+  currentFarcaster?: string // Already synced Farcaster username
 }
 
-export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: FarcasterSyncButtonProps) {
+export function FarcasterSyncButton({ onSyncComplete, disabled, compact, currentFarcaster }: FarcasterSyncButtonProps) {
   const { login, user } = usePrivy()
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [hasSynced, setHasSynced] = useState(false)
 
-  // Auto-sync when Farcaster is connected
-  useEffect(() => {
-    if (user?.farcaster?.username && !hasSynced) {
-      handleAutoSync()
-    }
-  }, [user?.farcaster?.username])
+  // Removed auto-sync useEffect - main auto-sync happens in page.tsx on sign-in
 
   const handleAutoSync = async () => {
     if (!user?.farcaster?.username) return
@@ -39,7 +34,6 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
       if (result.success && result.data) {
         setSyncStatus('success')
         onSyncComplete(result.data)
-        setHasSynced(true)
         
         // No toast notification - just visual feedback on button
         setTimeout(() => setSyncStatus('idle'), 3000)
@@ -75,17 +69,18 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     if (isSyncing) {
       return (
         <>
-          <Loader2 className="w-5 h-5 animate-spin" />
+          <Loader2 className={`animate-spin ${compact ? "w-4 h-4" : "w-5 h-5"}`} />
           Syncing...
         </>
       )
     }
 
-    if (syncStatus === 'success') {
+    // If already synced or has Farcaster data, show "Connected"
+    if (currentFarcaster || user?.farcaster?.username) {
       return (
         <>
-          <Check className="w-5 h-5" />
-          Synced!
+          <Check className={compact ? "w-4 h-4" : "w-5 h-5"} />
+          Connected
         </>
       )
     }
@@ -93,24 +88,15 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     if (syncStatus === 'error') {
       return (
         <>
-          <AlertCircle className="w-5 h-5" />
+          <AlertCircle className={compact ? "w-4 h-4" : "w-5 h-5"} />
           Sync Failed
-        </>
-      )
-    }
-
-    if (user?.farcaster?.username) {
-      return (
-        <>
-          <Check className="w-5 h-5" />
-          Connected
         </>
       )
     }
 
     return (
       <>
-        <FarcasterIcon className="w-5 h-5" />
+        <FarcasterIcon className={compact ? "w-4 h-4" : "w-5 h-5"} />
         Connect Farcaster
       </>
     )
@@ -120,14 +106,15 @@ export function FarcasterSyncButton({ onSyncComplete, disabled, compact }: Farca
     <button
       onClick={(e) => {
         e.stopPropagation()
-        if (!user?.farcaster?.username) {
+        if (!user?.farcaster?.username && !currentFarcaster) {
           handleConnect()
-        } else {
+        } else if (!currentFarcaster) {
+          // Only allow re-sync if not already synced to database
           handleAutoSync()
         }
       }}
-      disabled={disabled || isSyncing}
-      className={`w-full py-3.5 ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg active:scale-95 touch-manipulation`}
+      disabled={disabled || isSyncing || !!currentFarcaster}
+      className={`w-full ${compact ? 'py-2.5 text-sm' : 'py-3.5'} ${getButtonColor()} text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg active:scale-95 touch-manipulation`}
     >
       {getButtonContent()}
     </button>

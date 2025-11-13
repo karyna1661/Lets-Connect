@@ -53,7 +53,7 @@ export function FlipCard({ front, back }: FlipCardProps) {
       >
         {/* Front */}
         <div
-          className="absolute top-0 left-0 w-full h-full"
+          className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
@@ -61,14 +61,14 @@ export function FlipCard({ front, back }: FlipCardProps) {
             WebkitTransform: "rotateY(0deg)",
           }}
         >
-          <div className="w-full h-full">
+          <div className="w-full h-full flex items-center justify-center">
             {front}
           </div>
         </div>
 
         {/* Back */}
         <div
-          className="absolute top-0 left-0 w-full h-full"
+          className="absolute top-0 left-0 w-full h-full flex items-center justify-center"
           style={{
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
@@ -76,7 +76,7 @@ export function FlipCard({ front, back }: FlipCardProps) {
             WebkitTransform: "rotateY(180deg)",
           }}
         >
-          <div className="w-full h-full">
+          <div className="w-full h-full flex items-center justify-center">
             {back}
           </div>
         </div>

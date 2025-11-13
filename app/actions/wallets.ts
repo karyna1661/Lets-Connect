@@ -1,7 +1,6 @@
 "use server"
 
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { getSupabaseServerClient } from "@/lib/supabase/server"
 
 async function hashWalletAddress(address: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -12,26 +11,6 @@ async function hashWalletAddress(address: string): Promise<string> {
   return hashHex
 }
 
-const getSupabaseServer = () => {
-  const cookieStore = cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-          } catch {}
-        },
-      },
-    },
-  )
-}
-
 export async function linkWallet(userId: string, walletAddress: string) {
   try {
     // Validate wallet format
@@ -39,7 +18,7 @@ export async function linkWallet(userId: string, walletAddress: string) {
       throw new Error("Invalid wallet address format")
     }
 
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServerClient()
     const walletHash = await hashWalletAddress(walletAddress)
 
     // Upsert wallet
@@ -53,14 +32,18 @@ export async function linkWallet(userId: string, walletAddress: string) {
 
     if (walletError) throw walletError
 
-    // Update profile with wallet hash
+    // Update profile with both wallet_hash AND wallet_address
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({ wallet_hash: walletHash })
+      .update({ 
+        wallet_hash: walletHash,
+        wallet_address: walletAddress  // Save the actual wallet address for POAP API
+      })
       .eq("user_id", userId)
 
     if (profileError) throw profileError
 
+    console.log('[Link Wallet] Successfully linked wallet:', walletAddress)
     return { success: true }
   } catch (error) {
     console.error("[v0] Error linking wallet:", error)
@@ -70,7 +53,7 @@ export async function linkWallet(userId: string, walletAddress: string) {
 
 export async function getWallet(userId: string) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServerClient()
 
     const { data, error } = await supabase.from("wallets").select("*").eq("user_id", userId).single()
 
@@ -84,7 +67,7 @@ export async function getWallet(userId: string) {
 
 export async function removeWallet(userId: string) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServerClient()
 
     const { error: walletError } = await supabase.from("wallets").delete().eq("user_id", userId)
 
