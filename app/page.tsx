@@ -296,8 +296,12 @@ export default function LetsConnect() {
 
     try {
       setIsSavingProfile(true)
-      setProfile(newProfile)
+      console.log('[Save Profile] Saving profile:', newProfile)
       await upsertProfile(newProfile)
+      // Reload profile from database to ensure we have the latest data
+      if (privyUser) {
+        await loadData(privyUser.id)
+      }
       setEditingProfile(null)
       toast.success("Profile saved successfully")
     } catch (error) {
@@ -624,7 +628,8 @@ export default function LetsConnect() {
               />
             </div>
 
-            <div className="w-full relative" style={{ minHeight: '280px' }}>
+            {/* Placeholder cards - Hidden until ready to implement */}
+            {/* <div className="w-full relative" style={{ minHeight: '280px' }}>
               <NavCard
                 icon={Heart}
                 title=""
@@ -646,7 +651,7 @@ export default function LetsConnect() {
                 ctaLabel=""
                 onClick={() => {}}
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -20,6 +20,8 @@ export async function getProfile(userId: string) {
 export async function upsertProfile(profile: Profile) {
   const supabase = await getSupabaseServerClient()
 
+  console.log('[Upsert Profile] Attempting to save:', JSON.stringify(profile, null, 2))
+
   const { data, error } = await supabase
     .from("profiles")
     .upsert(
@@ -39,6 +41,7 @@ export async function upsertProfile(profile: Profile) {
     throw new Error("Failed to save profile")
   }
 
+  console.log('[Upsert Profile] Successfully saved:', JSON.stringify(data, null, 2))
   revalidatePath("/")
   return data
 }
@@ -77,6 +80,7 @@ export async function mergeProfileOnAccountLink(newUserId: string, existingEmail
         const mergedProfile = {
           ...existingProfile,
           user_id: newUserId,  // Use new Privy user ID
+          email: existingEmail,  // Ensure email is saved
           // Keep existing data, only update if new fields are not empty
           updated_at: new Date().toISOString(),
         }

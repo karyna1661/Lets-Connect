@@ -21,11 +21,27 @@ export function PrivyProviderWrapper({ children }: { children: React.ReactNode }
     <PrivyProvider
       appId={appId}
       config={{
-        loginMethods: ['wallet', 'email', 'farcaster', 'google', 'twitter', 'discord', 'github'],
+        loginMethods: ['email', 'farcaster', 'wallet'],
         appearance: {
           theme: 'light',
           accentColor: '#000000',
+          walletList: ['base_account', 'metamask', 'coinbase_wallet', 'wallet_connect', 'rainbow'],
         },
+        supportedChains: [
+          {
+            id: 8453, // Base
+            name: 'Base',
+            network: 'base',
+            nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+            rpcUrls: {
+              default: { http: ['https://mainnet.base.org'] },
+              public: { http: ['https://mainnet.base.org'] },
+            },
+            blockExplorers: {
+              default: { name: 'BaseScan', url: 'https://basescan.org' },
+            },
+          },
+        ],
       }}
     >
       {children}

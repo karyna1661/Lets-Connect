@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Save, User, MapPin, Briefcase, Heart, Globe2, Instagram, Linkedin, Twitter, Github, Mail, Zap, Youtube } from "lucide-react"
-import { FlipCard } from "@/components/flip-card-simple"
+import { Save, User, MapPin, Briefcase, Heart, Globe2, Instagram, Linkedin, Github, Mail, Zap, Youtube } from "lucide-react"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
 import { POAPSyncButton } from "@/components/poap-sync-button"
 import { FarcasterSyncButton } from "@/components/farcaster-sync-button"
@@ -93,19 +92,23 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
 
         <div className="flex flex-wrap gap-2">
           {[
-            { key: "instagram", icon: Instagram },
-            { key: "x", icon: Twitter },
-            { key: "linkedin", icon: Linkedin },
-            { key: "github", icon: Github },
-            { key: "email", icon: Mail },
-            { key: "youtube", icon: Youtube },
+            { key: "instagram", icon: Instagram, useIcon: false },
+            { key: "x", icon: null, useIcon: true, iconPath: "/x-icon.svg" },
+            { key: "linkedin", icon: Linkedin, useIcon: false },
+            { key: "github", icon: Github, useIcon: false },
+            { key: "email", icon: Mail, useIcon: false },
+            { key: "youtube", icon: Youtube, useIcon: false },
           ].map((platform) => {
             const value = editedProfile[platform.key as keyof Profile]
             if (!value) return null
             const Icon = platform.icon
             return (
               <div key={platform.key} className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
-                <Icon className="w-4 h-4 text-white" />
+                {platform.useIcon && platform.iconPath ? (
+                  <img src={platform.iconPath} alt={platform.key} className="w-4 h-4" style={{ filter: 'invert(1)' }} />
+                ) : Icon ? (
+                  <Icon className="w-4 h-4 text-white" />
+                ) : null}
               </div>
             )
           })}
@@ -193,6 +196,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
       style={{
         background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
         boxShadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)`,
+        minHeight: '600px',  // Ensure minimum height for visibility
       }}
     >
       {/* Noise texture overlay */}
@@ -203,23 +207,8 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
         }}
       />
 
-      {/* Scrollable content area - no nested scrollbar */}
-      <div className="relative z-10 flex-1 px-6 pt-6 pb-4" style={{ overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style jsx>{`
-          div::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6 sticky top-0 bg-gradient-to-b from-gray-900 to-transparent pb-4 -mt-6 pt-6 z-20">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg ring-2 ring-white/10">
-            <User className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-white text-lg font-bold tracking-tight">Edit Profile</h3>
-          </div>
-        </div>
-
+      {/* Content area - uses main page scrollbar */}
+      <div className="relative z-10 px-6 pt-6 pb-4">
         {/* Form Fields */}
         <div className="space-y-5">
           {/* Profile Photo Section */}
@@ -320,23 +309,24 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
                   <Heart className="w-3 h-3" />
                   Interests
                 </label>
-                <input
-                  type="text"
+                <textarea
                   value={(editedProfile.interests || []).join(", ")}
                   onChange={(e) => {
                     e.stopPropagation()
+                    const value = e.target.value
                     handleChange({
-                      interests: e.target.value
-                        .split(",")
+                      interests: value
+                        .split(/[,.]/)  // Split by comma OR period
                         .map((i) => i.trim())
                         .filter((i) => i),
                     })
                   }}
                   onClick={(e) => e.stopPropagation()}
                   placeholder="Web3, Ethereum, DeFi, ZK Proofs"
-                  className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                  rows={2}
+                  className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all resize-none"
                 />
-                <p className="text-xs text-gray-500 mt-1.5">Separate with commas</p>
+                <p className="text-xs text-gray-500 mt-1.5">Separate with commas or periods</p>
               </div>
             </div>
           </div>
@@ -364,26 +354,30 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
             
             <div className="space-y-2">
               {[
-                { key: "x", icon: Twitter, placeholder: "@username", label: "X (Twitter)" },
-                { key: "github", icon: Github, placeholder: "username", label: "GitHub" },
-                { key: "linkedin", icon: Linkedin, placeholder: "linkedin.com/in/username", label: "LinkedIn" },
-                { key: "instagram", icon: Instagram, placeholder: "@username", label: "Instagram" },
-                { key: "farcaster", icon: User, placeholder: "@username", label: "Farcaster" },
-                { key: "telegram", icon: Mail, placeholder: "@username", label: "Telegram" },
-                { key: "tiktok", icon: Globe2, placeholder: "@username", label: "TikTok" },
-                { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
-                { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
-                { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
-                { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
-                { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
-                { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
+                { key: "farcaster", icon: User, placeholder: "@username", label: "Farcaster", useIcon: false },
+                { key: "x", icon: null, placeholder: "@username", label: "X (Twitter)", useIcon: true, iconPath: "/x-icon.svg" },
+                { key: "github", icon: Github, placeholder: "username", label: "GitHub", useIcon: false },
+                { key: "linkedin", icon: Linkedin, placeholder: "linkedin.com/in/username", label: "LinkedIn", useIcon: false },
+                { key: "instagram", icon: Instagram, placeholder: "@username", label: "Instagram", useIcon: false },
+                { key: "telegram", icon: null, placeholder: "@username", label: "Telegram", useIcon: true, iconPath: "/telegram-icon.svg" },
+                { key: "tiktok", icon: null, placeholder: "@username", label: "TikTok", useIcon: true, iconPath: "/tiktok-icon.svg" },
+                { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube", useIcon: false },
+                { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email", useIcon: false },
+                { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain", useIcon: false },
+                { key: "zora", icon: null, placeholder: "zora.co/username", label: "Zora", useIcon: true, iconPath: "/zora-icon.svg" },
+                { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph", useIcon: false },
+                { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack", useIcon: false },
               ].map((social) => {
                 const Icon = social.icon
                 return (
                   <div key={social.key} className="group">
                     <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
                     <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
-                      <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      {social.useIcon && social.iconPath ? (
+                        <img src={social.iconPath} alt={social.label} className="w-4 h-4 flex-shrink-0" />
+                      ) : Icon ? (
+                        <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      ) : null}
                       <input
                         type="text"
                         value={(editedProfile[social.key as keyof Profile] as string) || ""}
@@ -402,33 +396,32 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Fixed Save Button */}
-      <div className="relative z-20 px-6 py-4 bg-gradient-to-t from-gray-900 via-gray-900/95 to-transparent">
-        {hasChanges && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleSave()
-            }}
-            disabled={isSaving}
-            className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 ring-2 ring-white/10 hover:ring-white/20 flip-card-button"
-          >
-            <Save className="w-5 h-5" />
-            {isSaving ? "Saving Changes..." : "Save Profile"}
-          </button>
-        )}
-        {!hasChanges && (
-          <div className="w-full py-3.5 bg-white/5 border border-white/10 text-gray-400 rounded-2xl font-medium flex items-center justify-center gap-2">
-            <span className="text-sm">✓ All changes saved</span>
-          </div>
-        )}
+        {/* Save Button */}
+        <div className="mt-6">
+          {hasChanges && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleSave()
+              }}
+              disabled={isSaving}
+              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 ring-2 ring-white/10 hover:ring-white/20 flip-card-button"
+            >
+              <Save className="w-5 h-5" />
+              {isSaving ? "Saving Changes..." : "Save Profile"}
+            </button>
+          )}
+          {!hasChanges && (
+            <div className="w-full py-3.5 bg-white/5 border border-white/10 text-gray-400 rounded-2xl font-medium flex items-center justify-center gap-2">
+              <span className="text-sm">✓ All changes saved</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 
-  // Full-screen edit mode
+  // Show full-screen edit mode when isFullScreen is true
   if (isFullScreen) {
     return (
       <div 
@@ -451,13 +444,7 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
         <div className="relative z-10 min-h-full flex flex-col">
           {/* Header with close button */}
           <div className="sticky top-0 bg-gradient-to-b from-gray-900 via-gray-900/95 to-transparent px-6 pt-6 pb-4 z-20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg ring-2 ring-white/10">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-white text-lg font-bold tracking-tight">Edit Profile</h3>
-              </div>
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => {
                   setIsFullScreen(false)
@@ -559,17 +546,20 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
                         <Heart className="w-3 h-3" />
                         Interests
                       </label>
-                      <input
-                        type="text"
+                      <textarea
                         value={(editedProfile.interests || []).join(", ")}
-                        onChange={(e) => handleChange({
-                          interests: e.target.value
-                            .split(",")
-                            .map((i) => i.trim())
-                            .filter((i) => i),
-                        })}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          handleChange({
+                            interests: value
+                              .split(",")
+                              .map((i) => i.trim())
+                              .filter((i) => i),
+                          })
+                        }}
                         placeholder="Web3, Ethereum, DeFi, ZK Proofs"
-                        className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                        rows={2}
+                        className="w-full bg-gray-900/50 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all resize-none"
                       />
                       <p className="text-xs text-gray-500 mt-1.5">Separate with commas</p>
                     </div>
@@ -599,26 +589,30 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
                   
                   <div className="space-y-2">
                     {[
-                      { key: "x", icon: Twitter, placeholder: "@username", label: "X (Twitter)" },
-                      { key: "github", icon: Github, placeholder: "username", label: "GitHub" },
-                      { key: "linkedin", icon: Linkedin, placeholder: "linkedin.com/in/username", label: "LinkedIn" },
-                      { key: "instagram", icon: Instagram, placeholder: "@username", label: "Instagram" },
-                      { key: "farcaster", icon: User, placeholder: "@username", label: "Farcaster" },
-                      { key: "telegram", icon: Mail, placeholder: "@username", label: "Telegram" },
-                      { key: "tiktok", icon: Globe2, placeholder: "@username", label: "TikTok" },
-                      { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube" },
-                      { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email" },
-                      { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain" },
-                      { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora" },
-                      { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph" },
-                      { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack" },
+                      { key: "farcaster", icon: User, placeholder: "@username", label: "Farcaster", useIcon: false },
+                      { key: "x", icon: null, placeholder: "@username", label: "X (Twitter)", useIcon: true, iconPath: "/x-icon.svg" },
+                      { key: "github", icon: Github, placeholder: "username", label: "GitHub", useIcon: false },
+                      { key: "linkedin", icon: Linkedin, placeholder: "linkedin.com/in/username", label: "LinkedIn", useIcon: false },
+                      { key: "instagram", icon: Instagram, placeholder: "@username", label: "Instagram", useIcon: false },
+                      { key: "telegram", icon: null, placeholder: "@username", label: "Telegram", useIcon: true, iconPath: "/telegram-icon.svg" },
+                      { key: "tiktok", icon: null, placeholder: "@username", label: "TikTok", useIcon: true, iconPath: "/tiktok-icon.svg" },
+                      { key: "youtube", icon: Youtube, placeholder: "youtube.com/c/yourchannel", label: "YouTube", useIcon: false },
+                      { key: "email", icon: Mail, placeholder: "you@example.com", label: "Email", useIcon: false },
+                      { key: "ens", icon: Globe2, placeholder: "yourname.eth", label: "ENS Domain", useIcon: false },
+                      { key: "zora", icon: Zap, placeholder: "zora.co/username", label: "Zora", useIcon: false },
+                      { key: "paragraph", icon: Globe2, placeholder: "paragraph.xyz/@username", label: "Paragraph", useIcon: false },
+                      { key: "substack", icon: Mail, placeholder: "yourname.substack.com", label: "Substack", useIcon: false },
                     ].map((social) => {
                       const Icon = social.icon
                       return (
                         <div key={social.key} className="group">
                           <label className="block text-xs font-medium text-gray-400 mb-1">{social.label}</label>
                           <div className="flex items-center gap-2 bg-gray-900/30 rounded-lg px-3 py-2 border border-white/5 group-hover:border-white/10 transition-all">
-                            <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            {social.useIcon && social.iconPath ? (
+                              <img src={social.iconPath} alt={social.label} className="w-4 h-4 flex-shrink-0" />
+                            ) : Icon ? (
+                              <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            ) : null}
                             <input
                               type="text"
                               value={(editedProfile[social.key as keyof Profile] as string) || ""}
@@ -664,13 +658,10 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
     )
   }
 
-  // Card mode (before flip)
+  // Default: show front card only (no flip animation)
   return (
-    <div className="w-full" style={{ height: "600px" }}>
-      <FlipCard
-        front={frontContent}
-        back={backContent}
-      />
+    <div className="w-full">
+      {frontContent}
     </div>
   )
 }

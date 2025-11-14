@@ -6,9 +6,10 @@ import type { ReactNode } from "react"
 interface FlipCardProps {
   front: ReactNode
   back: ReactNode
+  onFlip?: (isFlipped: boolean) => void
 }
 
-export function FlipCard({ front, back }: FlipCardProps) {
+export function FlipCard({ front, back, onFlip }: FlipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -17,7 +18,9 @@ export function FlipCard({ front, back }: FlipCardProps) {
     // Allow buttons to work normally (they'll stop propagation)
     // But flip the card when clicking anywhere else on the front
     if (!target.closest('button') || target.closest('.flip-trigger')) {
-      setIsFlipped(!isFlipped)
+      const newFlipState = !isFlipped
+      setIsFlipped(newFlipState)
+      onFlip?.(newFlipState)
     }
   }
 
