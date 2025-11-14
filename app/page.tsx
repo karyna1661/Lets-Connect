@@ -597,8 +597,6 @@ export default function LetsConnect() {
                 backTitle="View Connections"
                 backDescription="View and manage saved contacts"
                 ctaLabel="View All"
-                secondaryLabel={connections.length > 0 ? "Export" : undefined}
-                onSecondaryClick={connections.length > 0 ? () => toast.info("Export coming soon") : undefined}
                 backExtra={
                   <div className="flex flex-col items-center gap-3">
                     {connections.length > 0 ? (
