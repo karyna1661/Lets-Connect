@@ -21,6 +21,7 @@ export async function upsertProfile(profile: Profile) {
   const supabase = await getSupabaseServerClient()
 
   console.log('[Upsert Profile] Attempting to save:', JSON.stringify(profile, null, 2))
+  console.log('[Upsert Profile] Interests type:', typeof profile.interests, 'Value:', profile.interests)
 
   const { data, error } = await supabase
     .from("profiles")
@@ -42,6 +43,7 @@ export async function upsertProfile(profile: Profile) {
   }
 
   console.log('[Upsert Profile] Successfully saved:', JSON.stringify(data, null, 2))
+  console.log('[Upsert Profile] Returned interests type:', typeof data.interests, 'Value:', data.interests)
   revalidatePath("/")
   return data
 }

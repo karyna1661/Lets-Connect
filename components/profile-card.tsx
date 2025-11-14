@@ -25,7 +25,16 @@ export function ProfileCard({ profile, userId, onSave, isSaving, poaps = [], onP
 
   // Update editedProfile when profile prop changes (after save)
   useEffect(() => {
-    setEditedProfile(profile)
+    // Ensure interests is always an array
+    const normalizedProfile = {
+      ...profile,
+      interests: Array.isArray(profile.interests) 
+        ? profile.interests 
+        : profile.interests 
+          ? [profile.interests as any].flat() 
+          : []
+    }
+    setEditedProfile(normalizedProfile)
   }, [profile])
 
   const handleChange = (updates: Partial<Profile>) => {
