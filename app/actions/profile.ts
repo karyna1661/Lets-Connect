@@ -7,12 +7,31 @@ import { revalidatePath } from "next/cache"
 export async function getProfile(userId: string) {
   const supabase = await getSupabaseServerClient()
 
+  console.log('[Get Profile] Fetching profile for userId:', userId)
   const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).single()
 
   if (error && error.code !== "PGRST116") {
-    console.error("[v0] Error fetching profile:", error)
+    console.error("[Get Profile] Error fetching profile:", error)
     throw new Error("Failed to fetch profile")
   }
+
+  if (error && error.code === "PGRST116") {
+    console.log('[Get Profile] No profile found (PGRST116 - no rows)')
+    return null
+  }
+
+  console.log('[Get Profile] Profile found in DB')
+  console.log('[Get Profile] Email from DB:', data?.email)
+  console.log('[Get Profile] City from DB:', data?.city)
+  console.log('[Get Profile] All socials:', {
+    email: data?.email,
+    linkedin: data?.linkedin,
+    x: data?.x,
+    instagram: data?.instagram,
+    github: data?.github,
+    youtube: data?.youtube,
+    farcaster: data?.farcaster,
+  })
 
   return data
 }

@@ -244,12 +244,23 @@ export default function LetsConnect() {
   const loadData = async (userId: string) => {
     try {
       setIsLoading(true)
+      console.log('[Load Data] Loading profile for userId:', userId)
 
       const [profileData, connectionsData] = await Promise.all([getProfile(userId), getConnections(userId)])
+
+      console.log('[Load Data] Profile received from DB:', JSON.stringify(profileData, null, 2))
+      console.log('[Load Data] Email:', profileData?.email)
+      console.log('[Load Data] City:', profileData?.city)
+      console.log('[Load Data] LinkedIn:', profileData?.linkedin)
+      console.log('[Load Data] X:', profileData?.x)
+      console.log('[Load Data] Instagram:', profileData?.instagram)
+      console.log('[Load Data] GitHub:', profileData?.github)
+      console.log('[Load Data] Interests:', profileData?.interests)
 
       if (profileData) {
         setProfile(profileData)
       } else {
+        console.log('[Load Data] No profile found, creating new profile state')
         setProfile((prev) => ({ ...prev, user_id: userId }))
       }
 
