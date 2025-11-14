@@ -318,6 +318,9 @@ export default function LetsConnect() {
       return
     }
 
+    console.log('[Scan] Scanned profile:', { user_id: scannedProfile.user_id, name: scannedProfile.name })
+    console.log('[Scan] Current user:', privyUser.id)
+
     try {
       const existingConnection = connections.find((conn) => conn.connected_user_id === scannedProfile.user_id)
 
@@ -327,11 +330,15 @@ export default function LetsConnect() {
         return
       }
 
-      // Show immediate success feedback
-      toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
+      console.log('[Scan] Adding connection...')
       
-      // Add connection in background
+      // Add connection first before showing success
       await addConnection(privyUser.id, scannedProfile)
+      
+      console.log('[Scan] Connection added successfully')
+      
+      // Show success feedback
+      toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
       
       // Reload data and navigate
       await loadData(privyUser.id)
@@ -341,12 +348,11 @@ export default function LetsConnect() {
         setView("connections")
       }, 500)
     } catch (error) {
-      console.error("[v0] Error adding connection:", error)
-      toast.error("Connection saved but encountered an error. Check your connections.")
-      // Still navigate to show the connection was saved
-      setTimeout(() => {
-        setView("connections")
-      }, 1000)
+      console.error("[Scan] Error adding connection:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+      console.error("[Scan] Error details:", errorMessage)
+      toast.error(`Failed to add connection: ${errorMessage}`)
+      setView("home")
     }
   }
 
