@@ -395,15 +395,17 @@ export default function LetsConnect() {
       await addConnection(privyUser.id, scannedProfile)
       console.log('[Scan] Connection added successfully to database')
       
-      // Wait a moment for DB replication
-      await new Promise(resolve => setTimeout(resolve, 300))
+      // Immediately fetch fresh connections and update state
+      console.log('[Scan] Fetching fresh connections...')
+      const freshConnections = await getConnections(privyUser.id)
+      console.log('[Scan] Fresh connections loaded:', freshConnections.length)
+      setConnections(freshConnections)
       
       // Show success message
       toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
       
-      // Trigger connections refresh and navigate
-      console.log('[Scan] Triggering connections refresh and navigating...')
-      setConnectionsRefreshTrigger(prev => prev + 1)
+      // Navigate immediately with fresh data already in state
+      console.log('[Scan] Navigating to connections view with fresh data')
       setView("connections")
       
     } catch (error) {
