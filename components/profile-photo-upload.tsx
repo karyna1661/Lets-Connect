@@ -45,8 +45,16 @@ export function ProfilePhotoUpload({ userId, currentImageUrl, onUploadSuccess, u
       }
       reader.readAsDataURL(file)
 
+      // Convert File to serializable format for server action
+      const arrayBuffer = await file.arrayBuffer()
+      const fileData = {
+        name: file.name,
+        type: file.type,
+        arrayBuffer: arrayBuffer,
+      }
+
       // Upload to Supabase
-      const imageUrl = await uploadProfileImage(userId, file)
+      const imageUrl = await uploadProfileImage(userId, fileData)
       onUploadSuccess(imageUrl)
     } catch (error) {
       console.error("[v0] Error uploading image:", error)

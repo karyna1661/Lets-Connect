@@ -2,9 +2,9 @@
 
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
-export async function uploadProfileImage(userId: string, file: File) {
+export async function uploadProfileImage(userId: string, fileData: { name: string; type: string; arrayBuffer: ArrayBuffer }) {
   try {
-    console.log('[Upload] Starting upload:', { userId, fileName: file.name, fileSize: file.size, fileType: file.type })
+    console.log('[Upload] Starting upload:', { userId, fileName: fileData.name, fileSize: fileData.arrayBuffer.byteLength, fileType: fileData.type })
 
     const supabase = await getSupabaseServerClient()
 
@@ -15,19 +15,18 @@ export async function uploadProfileImage(userId: string, file: File) {
     }
 
     // Create a unique file name
-    const fileExt = file.name.split(".").pop()
+    const fileExt = fileData.name.split(".").pop()
     const fileName = `${userId}-${Date.now()}.${fileExt}`
     const filePath = `profiles/${fileName}`
 
     console.log('[Upload] Uploading to path:', filePath)
 
-    // Convert File to ArrayBuffer then to Buffer
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    // Convert ArrayBuffer to Buffer
+    const buffer = Buffer.from(fileData.arrayBuffer)
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage.from("profile-images").upload(filePath, buffer, {
-      contentType: file.type,
+      contentType: fileData.type,
       upsert: true,
     })
 
