@@ -61,7 +61,7 @@ export function ConnectionCard({ connection, onDelete, onSaveNotes, isSavingNote
   }
 
   const frontContent = (
-    <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border border-gray-200/50 h-full overflow-hidden"
+    <div className="relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl border-2 border-gray-300 h-full overflow-hidden"
       style={{
         boxShadow: `
           0 0 0 1px rgba(0,0,0,0.04),
