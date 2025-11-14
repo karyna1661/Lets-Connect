@@ -161,17 +161,35 @@ export default function LetsConnect() {
           console.log('[Auto Sync] Starting Farcaster sync for:', farcasterUsername)
           console.log('[Auto Sync] Privy user ID:', privyUser?.id)
           
+          // First load existing profile from DB
+          const existingProfile = await getProfile(privyUser.id)
+          console.log('[Auto Sync] Existing profile from DB:', existingProfile)
+          
           const result = await syncFromFarcaster(farcasterUsername)
           console.log('[Auto Sync] Sync result:', result)
           
           if (result.success && result.data) {
-            const updatedProfile = { ...profile, ...result.data, user_id: privyUser.id }
-            console.log('[Auto Sync] Profile updated in state:', updatedProfile)
+            // MERGE: Only fill in fields that are currently empty
+            // Keep user's manually entered data (email, city, interests, etc.)
+            const mergedProfile = {
+              ...existingProfile,  // Start with existing data
+              ...result.data,      // Add Farcaster data
+              // Preserve manually entered fields if they exist
+              email: existingProfile?.email || result.data.email || '',
+              city: existingProfile?.city || result.data.city || '',
+              role: existingProfile?.role || result.data.role || 'Other',
+              interests: existingProfile?.interests || result.data.interests || [],
+              linkedin: existingProfile?.linkedin || result.data.linkedin || '',
+              instagram: existingProfile?.instagram || result.data.instagram || '',
+              youtube: existingProfile?.youtube || result.data.youtube || '',
+              user_id: privyUser.id
+            }
+            console.log('[Auto Sync] Merged profile (preserving manual data):', mergedProfile)
             
-            // Auto-save the profile with wallet_address to database
+            // Auto-save the merged profile to database
             try {
-              console.log('[Auto Sync] Calling upsertProfile')
-              const savedProfile = await upsertProfile(updatedProfile)
+              console.log('[Auto Sync] Calling upsertProfile with merged data')
+              const savedProfile = await upsertProfile(mergedProfile)
               console.log('[Auto Sync] Profile saved successfully:', savedProfile)
               console.log('[Auto Sync] Wallet address saved:', result.data.wallet_address)
               
@@ -185,7 +203,7 @@ export default function LetsConnect() {
               console.error('[Auto Sync] Error details:', JSON.stringify(saveError, null, 2))
               
               // Still update UI even if save failed
-              setProfile(updatedProfile)
+              setProfile(mergedProfile)
             }
             
             // Refresh POAPs after wallet is set
