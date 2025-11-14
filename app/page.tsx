@@ -232,6 +232,21 @@ export default function LetsConnect() {
     }
   }, [ready, authenticated, farcasterUsername, privyUser?.id, lastSyncedUser])
 
+  // Refresh connections when viewing connections page
+  useEffect(() => {
+    if (view === "connections" && privyUser?.id) {
+      console.log('[Connections View] Refreshing connections...')
+      getConnections(privyUser.id)
+        .then(connectionsData => {
+          console.log('[Connections View] Loaded', connectionsData.length, 'connections')
+          setConnections(connectionsData)
+        })
+        .catch(error => {
+          console.error('[Connections View] Error loading connections:', error)
+        })
+    }
+  }, [view, privyUser?.id])
+
   const checkAuth = async () => {
     if (!privyUser) {
       setIsLoading(false)
@@ -375,66 +390,18 @@ export default function LetsConnect() {
       console.log('[Scan] Adding connection...')
       console.log('[Scan] Current connections count BEFORE:', connections.length)
       
-      // Add connection first before showing success
-      const newConnection = await addConnection(privyUser.id, scannedProfile)
-      console.log('[Scan] Connection added successfully, returned:', newConnection)
+      // Add connection to database (bidirectional)
+      await addConnection(privyUser.id, scannedProfile)
+      console.log('[Scan] Connection added successfully to database')
       
-      // Reload data immediately - this will refresh connections list
-      console.log('[Scan] Reloading connections from database...')
-      
-      let updatedProfile = null
-      let updatedConnections = []
-      
-      try {
-        const results = await Promise.all([
-          getProfile(privyUser.id),
-          getConnections(privyUser.id)
-        ])
-        updatedProfile = results[0]
-        updatedConnections = results[1]
-        
-        console.log('[Scan] Profile fetched:', updatedProfile ? 'success' : 'null')
-        console.log('[Scan] Connections fetched, count:', updatedConnections?.length || 0)
-        console.log('[Scan] Connections data type:', typeof updatedConnections, Array.isArray(updatedConnections))
-        
-        // Safely log connections
-        if (Array.isArray(updatedConnections) && updatedConnections.length > 0) {
-          try {
-            const connectionNames = updatedConnections.map(c => ({
-              id: c?.id || 'no-id',
-              name: c?.connection_data?.name || 'no-name',
-              hasData: !!c?.connection_data
-            }))
-            console.log('[Scan] Updated connections:', connectionNames)
-          } catch (mapError) {
-            console.error('[Scan] Error mapping connections:', mapError)
-            console.log('[Scan] Raw connections:', JSON.stringify(updatedConnections).substring(0, 200))
-          }
-        }
-      } catch (fetchError) {
-        console.error('[Scan] Error fetching updated data:', fetchError)
-        throw fetchError
-      }
-      
-      // Update state with fresh data
-      if (updatedProfile) {
-        setProfile(updatedProfile)
-      }
-      
-      if (Array.isArray(updatedConnections)) {
-        setConnections(updatedConnections)
-      } else {
-        console.error('[Scan] Invalid connections data, keeping old state')
-      }
-      
-      // Show success feedback AFTER state is updated
+      // Show success message
       toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
       
-      // Wait a bit for React to re-render with new state
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
+      // Navigate to connections immediately
+      // The connections will refresh when the view loads
       console.log('[Scan] Navigating to connections view')
       setView("connections")
+      
     } catch (error) {
       console.error("[Scan] Error adding connection:", error)
       
