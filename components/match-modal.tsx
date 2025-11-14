@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { Profile } from "@/lib/types"
@@ -10,9 +11,18 @@ interface MatchModalProps {
 }
 
 export function MatchModal({ profile, onClose }: MatchModalProps) {
+  // Auto-close after 6 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose()
+    }, 6000)
+
+    return () => clearTimeout(timer)
+  }, [onClose])
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-      <div className="bg-white rounded-3xl shadow-2xl border-2 border-black max-w-sm w-full p-8 text-center animate-bounce">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6 animate-fadeIn">
+      <div className="bg-white rounded-3xl shadow-2xl border-2 border-black max-w-sm w-full p-8 text-center animate-scaleIn">
         <div className="flex justify-end mb-4">
           <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
             <X className="w-6 h-6" />
@@ -47,7 +57,39 @@ export function MatchModal({ profile, onClose }: MatchModalProps) {
         >
           Continue Swiping
         </button>
+
+        <p className="text-xs text-gray-400 mt-3">Auto-closing in a moment...</p>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes scaleIn {
+          0% {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+      `}</style>
     </div>
   )
 }

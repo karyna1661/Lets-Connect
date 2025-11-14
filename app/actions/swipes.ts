@@ -3,8 +3,8 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-const getSupabaseServer = () => {
-  const cookieStore = cookies()
+const getSupabaseServer = async () => {
+  const cookieStore = await cookies()
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
@@ -23,9 +23,17 @@ const getSupabaseServer = () => {
   )
 }
 
-export async function recordSwipe(userId: string, targetUserId: string, direction: "left" | "right") {
+export async function recordSwipe(userId: string, targetUserId: string, direction: "left" | "right", isDevMode = false) {
   try {
-    const supabase = getSupabaseServer()
+    // In dev mode with mock users, skip database operations
+    if (isDevMode && targetUserId.startsWith('mock_')) {
+      console.log(`[Dev Mode] Simulated swipe: ${direction} on ${targetUserId}`)
+      // Simulate a 30% match rate for right swipes in dev mode
+      const isMatch = direction === "right" && Math.random() < 0.3
+      return { success: true, isMatch }
+    }
+
+    const supabase = await getSupabaseServer()
 
     // Get shared POAP count
     const { data: sharedCount } = await supabase.rpc("get_shared_poaps_count", {
@@ -74,7 +82,7 @@ export async function recordSwipe(userId: string, targetUserId: string, directio
 
 export async function createMatch(userAId: string, userBId: string, sharedPoapCount: number) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServer()
 
     // Get shared POAPs details
     const { data: sharedPoaps } = await supabase.rpc("get_shared_poaps", {
@@ -118,7 +126,7 @@ export async function createMatch(userAId: string, userBId: string, sharedPoapCo
 
 export async function getUserMatches(userId: string) {
   try {
-    const supabase = getSupabaseServer()
+    const supabase = await getSupabaseServer()
 
     const { data, error } = await supabase
       .from("matches")

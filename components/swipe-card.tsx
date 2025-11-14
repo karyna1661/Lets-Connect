@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Heart, X, Zap, ChevronDown } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FlipCard } from "@/components/flip-card"
@@ -16,6 +16,12 @@ interface SwipeCardProps {
 
 export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, isLoading }: SwipeCardProps) {
   const [isAnimating, setIsAnimating] = useState(false)
+  const [cardKey, setCardKey] = useState(0) // Key to force card reset
+
+  // Reset card to front when profile changes
+  useEffect(() => {
+    setCardKey(prev => prev + 1)
+  }, [profile.user_id])
 
   const handleSwipe = (direction: "left" | "right") => {
     setIsAnimating(true)
@@ -28,8 +34,8 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
   const frontContent = (
     <div
       className={`
-        relative w-full max-w-sm mx-auto bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl 
-        border border-gray-200/50
+        relative w-full bg-gradient-to-br from-white via-white to-gray-50 rounded-3xl 
+        border-2 border-gray-300
         transition-all duration-300 transform h-full overflow-hidden
         ${isAnimating ? "scale-95 opacity-0" : "scale-100 opacity-100"}
       `}
@@ -41,8 +47,8 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
         `,
       }}
     >
-      {/* Image container with gradient overlay */}
-      <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+      {/* Image container */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200" style={{ height: "280px" }}>
         <Avatar className="w-full h-full rounded-none border-0">
           <AvatarImage src={profile.profile_image || undefined} alt={profile.name} className="object-cover" />
           <AvatarFallback className="rounded-none text-4xl font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
@@ -121,19 +127,10 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
 
   const backContent = (
     <div 
-      className="w-full max-w-sm mx-auto rounded-3xl h-full p-6 flex flex-col justify-between overflow-hidden relative"
+      className="w-full rounded-3xl h-full p-6 flex flex-col justify-between overflow-hidden relative"
       style={{
-        background: `
-          linear-gradient(135deg, 
-            rgba(17, 24, 39, 1) 0%, 
-            rgba(31, 41, 55, 1) 50%, 
-            rgba(17, 24, 39, 1) 100%
-          )
-        `,
-        boxShadow: `
-          inset 0 1px 0 rgba(255,255,255,0.1),
-          0 8px 32px rgba(0,0,0,0.4)
-        `,
+        background: `linear-gradient(135deg, rgba(17, 24, 39, 1) 0%, rgba(31, 41, 55, 1) 50%, rgba(17, 24, 39, 1) 100%)`,
+        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.4)`,
       }}
     >
       {/* Subtle noise texture overlay */}
@@ -147,11 +144,17 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
       {/* Content */}
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg">
-            <span className="text-2xl">
-              {profile.name?.charAt(0).toUpperCase() || "?"}
-            </span>
-          </div>
+          <Avatar className="w-12 h-12 border-2 border-white/20">
+            <AvatarImage src={profile.profile_image || undefined} alt={profile.name} />
+            <AvatarFallback className="bg-gradient-to-br from-pink-500 to-rose-600 text-white text-lg font-bold">
+              {profile.name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2) || "?"}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h3 className="text-white text-xl font-bold tracking-tight">{profile.name}</h3>
             <p className="text-gray-400 text-sm">{profile.role || "Networker"}</p>
@@ -159,7 +162,7 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
         </div>
 
         {profile.interests && profile.interests.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-4">
             <p className="text-gray-400 text-xs font-semibold mb-3 uppercase tracking-wider">Interests</p>
             <div className="flex flex-wrap gap-2">
               {profile.interests.map((interest, idx) => (
@@ -177,8 +180,20 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
           </div>
         )}
 
+        {sharedPOAPs > 0 && (
+          <div className="mb-4">
+            <p className="text-gray-400 text-xs font-semibold mb-3 uppercase tracking-wider">Shared Events</p>
+            <div className="p-3 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl border border-indigo-400/30">
+              <p className="text-sm font-bold text-white flex items-center gap-2">
+                <span className="text-base">🎉</span>
+                {sharedPOAPs} POAP{sharedPOAPs !== 1 ? "s" : ""} in common
+              </p>
+            </div>
+          </div>
+        )}
+
         {profile.bio && (
-          <div className="mb-6">
+          <div className="mb-4">
             <p className="text-gray-400 text-xs font-semibold mb-2 uppercase tracking-wider">About</p>
             <p className="text-gray-200 text-sm leading-relaxed">{profile.bio}</p>
           </div>
@@ -223,12 +238,12 @@ export function SwipeCard({ profile, compatibilityScore, sharedPOAPs, onSwipe, i
   )
 
   return (
-    <div className="w-full max-w-sm mx-auto h-full">
+    <div key={cardKey} className="w-full rounded-3xl overflow-hidden" style={{ height: "500px" }}>
       <FlipCard 
         front={frontContent} 
         back={backContent} 
-        duration={400} 
-        zDepth="xl"
+        duration={500} 
+        zDepth="lg"
         timingFunction="cubic-bezier(0.34, 1.56, 0.64, 1)"
         glowEffect={true}
       />

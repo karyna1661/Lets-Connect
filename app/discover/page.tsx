@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { ChevronDown, Loader2, AlertCircle } from "lucide-react"
 import { getDiscoveryProfiles, getSharedPOAPs } from "@/app/actions/discovery"
 import { recordSwipe, getUserMatches } from "@/app/actions/swipes"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { addConnection } from "@/app/actions/connections"
 import { SwipeCard } from "@/components/swipe-card"
 import { MatchModal } from "@/components/match-modal"
 import { toast } from "sonner"
@@ -22,38 +22,23 @@ export default function DiscoverPage() {
   const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null)
   const [cities, setCities] = useState<string[]>([])
   const [sharedPOAPs, setSharedPOAPs] = useState(0)
-
-  let supabase: ReturnType<typeof getSupabaseBrowserClient> | null = null
-  try {
-    supabase = getSupabaseBrowserClient()
-  } catch (error) {
-    console.error("[v0] Supabase initialization error:", error)
-  }
+  const [devMode, setDevMode] = useState(false) // Dev mode disabled - using real profiles
 
   useEffect(() => {
-    checkAuth()
+    // Use a static user ID to avoid hydration mismatch
+    // In production, this will be replaced with actual Privy user ID
+    const staticUser = { id: "temp_discover_user" }
+    setUser(staticUser)
+    loadProfiles(staticUser.id)
   }, [])
 
-  const checkAuth = async () => {
-    if (!supabase) return
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        await loadProfiles(user.id)
-      }
-    } catch (error) {
-      console.error("[v0] Error checking auth:", error)
-    }
-  }
+  // Removed - using Privy, not Supabase auth
+  // const checkAuth = async () => { ... }
 
   const loadProfiles = async (userId: string, city?: string) => {
     try {
       setIsLoading(true)
-      const profilesData = await getDiscoveryProfiles(userId, city)
+      const profilesData = await getDiscoveryProfiles(userId, city, devMode)
       setProfiles(profilesData)
       setCurrentIndex(0)
 
@@ -61,15 +46,18 @@ export default function DiscoverPage() {
       const uniqueCities = [...new Set(profilesData.map((p) => p.city).filter(Boolean))] as string[]
       setCities(uniqueCities)
 
-      // Load shared POAPs for first profile
-      if (profilesData.length > 0) {
-        const sharedCount = await getSharedPOAPsCount(userId, profilesData[0].user_id)
-        setSharedPOAPs(sharedCount)
+      setIsLoading(false) // Stop loading immediately after profiles load
+
+      // Load shared POAPs for first profile asynchronously (don't block render)
+      if (profilesData.length > 0 && !devMode) {
+        getSharedPOAPsCount(userId, profilesData[0].user_id).then(setSharedPOAPs).catch(() => setSharedPOAPs(0))
+      } else if (devMode && profilesData.length > 0) {
+        // Mock shared POAPs count for dev mode
+        setSharedPOAPs(Math.floor(Math.random() * 5))
       }
     } catch (error) {
       console.error("[v0] Error loading profiles:", error)
       toast.error("Failed to load profiles")
-    } finally {
       setIsLoading(false)
     }
   }
@@ -90,20 +78,46 @@ export default function DiscoverPage() {
 
     try {
       setIsRecordingSwipe(true)
-      await recordSwipe(user.id, targetProfile.user_id, direction)
+      const result = await recordSwipe(user.id, targetProfile.user_id, direction, devMode)
 
       if (direction === "right") {
-        // Check if it's a match
-        const matches = await getUserMatches(user.id)
-        const isMatch = matches.some(
-          (m) =>
-            (m.user_a_id === user.id && m.user_b_id === targetProfile.user_id) ||
-            (m.user_b_id === user.id && m.user_a_id === targetProfile.user_id),
-        )
-
-        if (isMatch) {
+        // In dev mode, use the simulated match result
+        if (devMode && result.isMatch) {
           setMatchedProfile(targetProfile)
           toast.success(`You matched with ${targetProfile.name}!`)
+          
+          // Create connection for matched users (skip in dev mode with mock users)
+          if (!targetProfile.user_id.startsWith('mock_')) {
+            try {
+              await addConnection(user.id, targetProfile)
+              console.log('[Match] Connection created successfully')
+            } catch (error) {
+              console.error('[Match] Failed to create connection:', error)
+            }
+          } else {
+            console.log('[Match] Skipping connection creation for mock user in dev mode')
+          }
+        } else if (!devMode) {
+          // Check if it's a match in normal mode
+          const matches = await getUserMatches(user.id)
+          const isMatch = matches.some(
+            (m) =>
+              (m.user_a_id === user.id && m.user_b_id === targetProfile.user_id) ||
+              (m.user_b_id === user.id && m.user_a_id === targetProfile.user_id),
+          )
+
+          if (isMatch) {
+            setMatchedProfile(targetProfile)
+            toast.success(`You matched with ${targetProfile.name}!`)
+            
+            // Create connection for matched users
+            try {
+              await addConnection(user.id, targetProfile)
+              console.log('[Match] Connection created successfully')
+            } catch (error) {
+              console.error('[Match] Failed to create connection:', error)
+            }
+          }
         }
       }
 
@@ -111,8 +125,12 @@ export default function DiscoverPage() {
       if (currentIndex + 1 < profiles.length) {
         setCurrentIndex(currentIndex + 1)
         const nextProfile = profiles[currentIndex + 1]
-        const sharedCount = await getSharedPOAPsCount(user.id, nextProfile.user_id)
-        setSharedPOAPs(sharedCount)
+        if (!devMode) {
+          const sharedCount = await getSharedPOAPsCount(user.id, nextProfile.user_id)
+          setSharedPOAPs(sharedCount)
+        } else {
+          setSharedPOAPs(Math.floor(Math.random() * 5))
+        }
       } else {
         setCurrentIndex(profiles.length)
         toast.info("No more profiles to discover")
