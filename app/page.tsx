@@ -31,6 +31,7 @@ import { getConnections, addConnection, deleteConnection, updateConnectionNotes 
 import type { Profile, Connection } from "@/lib/types"
 import { PrivyAuthForm } from "@/components/privy-auth-form"
 import { QRCodeDisplay } from "@/components/qr-code-display"
+import { QRCodeEditor } from "@/components/qr-code-editor"
 import { QRScanner } from "@/components/qr-scanner"
 import { ProfilePhotoUpload } from "@/components/profile-photo-upload"
 import { POAPSyncButton } from "@/components/poap-sync-button"
@@ -87,6 +88,7 @@ export default function LetsConnect() {
   const [savingNotes, setSavingNotes] = useState<{ [key: string]: boolean }>({})
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [initError, setInitError] = useState<string | null>(null)
+  const [isQREditorOpen, setIsQREditorOpen] = useState(false)
 
   // Helper functions
   const getProfileCompletion = (profile: Profile): number => {
@@ -340,8 +342,10 @@ export default function LetsConnect() {
       // Show success feedback
       toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
       
-      // Reload data and navigate
+      // Reload data immediately - this will refresh connections list
+      console.log('[Scan] Reloading connections...')
       await loadData(privyUser.id)
+      console.log('[Scan] Connections reloaded, count:', connections.length + 1)
       
       // Small delay for smooth transition
       setTimeout(() => {
@@ -704,33 +708,53 @@ export default function LetsConnect() {
 
   if (view === "qr") {
     return (
-      <div className="min-h-screen bg-black p-6 flex flex-col items-center justify-center">
-        <button
-          onClick={() => setView("home")}
-          className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full"
-        >
-          <X className="w-6 h-6 text-white" />
-        </button>
+      <>
+        {isQREditorOpen && (
+          <QRCodeEditor 
+            profile={profile} 
+            onClose={() => setIsQREditorOpen(false)} 
+          />
+        )}
+        
+        {!isQREditorOpen && (
+          <div className="min-h-screen bg-black p-6 flex flex-col items-center justify-center">
+            <button
+              onClick={() => setView("home")}
+              className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
 
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Your QR Code</h2>
-          <p className="text-gray-300">Let others scan to connect</p>
-        </div>
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-white mb-2">Your QR Code</h2>
+              <p className="text-gray-300">Let others scan to connect</p>
+            </div>
 
-        <QRCodeDisplay profile={profile} />
+            <div onClick={() => setIsQREditorOpen(true)} className="cursor-pointer">
+              <QRCodeDisplay profile={profile} />
+            </div>
 
-        {profile.name && (
-          <div className="mt-6 text-center">
-            <div className="text-2xl font-bold text-white">{profile.name}</div>
-            {profile.bio && <div className="text-gray-300 mb-2">{profile.bio}</div>}
-            {profile.farcaster && (
-              <div className="text-purple-400 text-sm font-semibold">
-                {profile.farcaster}
+            {/* Tap to edit button */}
+            <div className="mt-6 cursor-pointer" onClick={() => setIsQREditorOpen(true)}>
+              <div className="bg-white/10 border border-white/20 px-4 py-2 rounded-full hover:bg-white/20 transition-colors">
+                <span className="text-sm font-semibold text-white">Tap to customize →</span>
+              </div>
+            </div>
+
+            {profile.name && (
+              <div className="mt-6 text-center">
+                <div className="text-2xl font-bold text-white">{profile.name}</div>
+                {profile.bio && <div className="text-gray-300 mb-2">{profile.bio}</div>}
+                {profile.farcaster && (
+                  <div className="text-purple-400 text-sm font-semibold">
+                    {profile.farcaster}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
-      </div>
+      </>
     )
   }
 

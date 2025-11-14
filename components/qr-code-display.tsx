@@ -19,7 +19,6 @@ export function QRCodeDisplay({ profile }: QRCodeDisplayProps) {
     instagram: profile.instagram,
     github: profile.github,
     youtube: profile.youtube,
-    website: profile.website,
     farcaster: profile.farcaster,
     profile_image: profile.profile_image,
     city: profile.city,
@@ -40,7 +39,7 @@ export function QRCodeDisplay({ profile }: QRCodeDisplayProps) {
       <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-4 mb-4">
         <QRCodeSVG 
           value={qrData} 
-          size={256} 
+          size={320}
           level="H" 
           includeMargin={true} 
           className="w-full h-auto rounded-xl" 
