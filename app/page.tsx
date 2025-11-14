@@ -298,12 +298,15 @@ export default function LetsConnect() {
 
     try {
       setIsSavingProfile(true)
-      console.log('[Save Profile] Saving profile:', newProfile)
-      await upsertProfile(newProfile)
-      // Reload profile from database to ensure we have the latest data
-      if (privyUser) {
-        await loadData(privyUser.id)
-      }
+      console.log('[Save Profile] Saving profile with city:', newProfile.city, 'and email:', newProfile.email)
+      console.log('[Save Profile] Full profile data:', JSON.stringify(newProfile, null, 2))
+      
+      const savedProfile = await upsertProfile(newProfile)
+      console.log('[Save Profile] Profile saved, returned data:', JSON.stringify(savedProfile, null, 2))
+      
+      // Update local state immediately with saved data
+      setProfile(savedProfile)
+      
       setEditingProfile(null)
       toast.success("Profile saved successfully")
     } catch (error) {
