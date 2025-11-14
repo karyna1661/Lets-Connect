@@ -373,24 +373,36 @@ export default function LetsConnect() {
       }
 
       console.log('[Scan] Adding connection...')
+      console.log('[Scan] Current connections count BEFORE:', connections.length)
       
       // Add connection first before showing success
-      await addConnection(privyUser.id, scannedProfile)
-      
-      console.log('[Scan] Connection added successfully')
-      
-      // Show success feedback
-      toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
+      const newConnection = await addConnection(privyUser.id, scannedProfile)
+      console.log('[Scan] Connection added successfully, returned:', newConnection)
       
       // Reload data immediately - this will refresh connections list
-      console.log('[Scan] Reloading connections...')
-      await loadData(privyUser.id)
-      console.log('[Scan] Connections reloaded, count:', connections.length + 1)
+      console.log('[Scan] Reloading connections from database...')
+      const [updatedProfile, updatedConnections] = await Promise.all([
+        getProfile(privyUser.id),
+        getConnections(privyUser.id)
+      ])
       
-      // Small delay for smooth transition
-      setTimeout(() => {
-        setView("connections")
-      }, 500)
+      console.log('[Scan] Connections reloaded from DB, count:', updatedConnections.length)
+      console.log('[Scan] Updated connections:', updatedConnections.map(c => ({ id: c.id, name: c.connection_data.name })))
+      
+      // Update state with fresh data
+      if (updatedProfile) {
+        setProfile(updatedProfile)
+      }
+      setConnections(updatedConnections)
+      
+      // Show success feedback AFTER state is updated
+      toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
+      
+      // Wait a bit for React to re-render with new state
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      console.log('[Scan] Navigating to connections view with', updatedConnections.length, 'connections')
+      setView("connections")
     } catch (error) {
       console.error("[Scan] Error adding connection:", error)
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
