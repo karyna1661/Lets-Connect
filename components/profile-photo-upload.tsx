@@ -50,7 +50,8 @@ export function ProfilePhotoUpload({ userId, currentImageUrl, onUploadSuccess, u
       onUploadSuccess(imageUrl)
     } catch (error) {
       console.error("[v0] Error uploading image:", error)
-      alert("Failed to upload image. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload image. Please try again."
+      alert(errorMessage)
       setPreviewUrl(currentImageUrl || null)
     } finally {
       setUploading(false)

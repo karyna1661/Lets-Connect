@@ -24,6 +24,14 @@ export async function getConnections(userId: string) {
 export async function addConnection(userId: string, connectionData: Profile, notes?: string) {
   const supabase = await getSupabaseServerClient()
 
+  console.log('[Connection] Adding connection:', { userId, connectedUserId: connectionData.user_id, name: connectionData.name })
+
+  // Validate input
+  if (!userId || !connectionData.user_id) {
+    console.error('[Connection] Invalid input:', { userId, connectionData })
+    throw new Error('Invalid user IDs')
+  }
+
   // Create bidirectional connection - both users will see each other
   const connection1 = {
     user_id: userId,
@@ -33,11 +41,15 @@ export async function addConnection(userId: string, connectionData: Profile, not
   }
 
   // Get the current user's profile to save in the reverse connection
-  const { data: currentUserProfile } = await supabase
+  const { data: currentUserProfile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
     .eq("user_id", userId)
     .single()
+
+  if (profileError) {
+    console.error('[Connection] Error fetching current user profile:', profileError)
+  }
 
   const connection2 = {
     user_id: connectionData.user_id,
@@ -55,16 +67,18 @@ export async function addConnection(userId: string, connectionData: Profile, not
   // Check if primary connection succeeded
   if (result1.status === "rejected" || (result1.status === "fulfilled" && result1.value.error)) {
     const error = result1.status === "rejected" ? result1.reason : result1.value.error
-    console.error("[v0] Error adding connection:", error)
-    throw new Error("Failed to add connection")
+    console.error("[Connection] Error adding connection:", error)
+    console.error('[Connection] Error details:', JSON.stringify(error, null, 2))
+    throw new Error(`Failed to add connection: ${error?.message || 'Unknown error'}`)
   }
 
-  // Log if reverse connection failed (not critical)
+  // Log if reverse connection failed (non-critical)
   if (result2.status === "rejected" || (result2.status === "fulfilled" && result2.value.error)) {
-    console.warn("[v0] Reverse connection failed (non-critical):", 
+    console.warn("[Connection] Reverse connection failed (non-critical):", 
       result2.status === "rejected" ? result2.reason : result2.value.error)
   }
 
+  console.log('[Connection] Connection added successfully')
   revalidatePath("/")
   return result1.status === "fulfilled" ? result1.value.data : null
 }
