@@ -89,6 +89,7 @@ export default function LetsConnect() {
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [initError, setInitError] = useState<string | null>(null)
   const [isQREditorOpen, setIsQREditorOpen] = useState(false)
+  const [connectionsRefreshTrigger, setConnectionsRefreshTrigger] = useState(0)
 
   // Helper functions
   const getProfileCompletion = (profile: Profile): number => {
@@ -235,7 +236,7 @@ export default function LetsConnect() {
   // Refresh connections when viewing connections page
   useEffect(() => {
     if (view === "connections" && privyUser?.id) {
-      console.log('[Connections View] Refreshing connections...')
+      console.log('[Connections View] Refreshing connections... (trigger:', connectionsRefreshTrigger, ')')
       getConnections(privyUser.id)
         .then(connectionsData => {
           console.log('[Connections View] Loaded', connectionsData.length, 'connections')
@@ -245,7 +246,7 @@ export default function LetsConnect() {
           console.error('[Connections View] Error loading connections:', error)
         })
     }
-  }, [view, privyUser?.id])
+  }, [view, privyUser?.id, connectionsRefreshTrigger])
 
   const checkAuth = async () => {
     if (!privyUser) {
@@ -394,12 +395,15 @@ export default function LetsConnect() {
       await addConnection(privyUser.id, scannedProfile)
       console.log('[Scan] Connection added successfully to database')
       
+      // Wait a moment for DB replication
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
       // Show success message
       toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
       
-      // Navigate to connections immediately
-      // The connections will refresh when the view loads
-      console.log('[Scan] Navigating to connections view')
+      // Trigger connections refresh and navigate
+      console.log('[Scan] Triggering connections refresh and navigating...')
+      setConnectionsRefreshTrigger(prev => prev + 1)
       setView("connections")
       
     } catch (error) {
