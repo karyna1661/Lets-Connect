@@ -90,6 +90,7 @@ export default function LetsConnect() {
   const [initError, setInitError] = useState<string | null>(null)
   const [isQREditorOpen, setIsQREditorOpen] = useState(false)
   const [connectionsRefreshTrigger, setConnectionsRefreshTrigger] = useState(0)
+  const [isScanningQR, setIsScanningQR] = useState(false)
 
   // Helper functions
   const getProfileCompletion = (profile: Profile): number => {
@@ -248,6 +249,21 @@ export default function LetsConnect() {
     }
   }, [view, privyUser?.id, connectionsRefreshTrigger])
 
+  // Refresh connections when returning to home page (after someone scans your QR)
+  useEffect(() => {
+    if (view === "home" && privyUser?.id) {
+      console.log('[Home View] Refreshing connections count...')
+      getConnections(privyUser.id)
+        .then(connectionsData => {
+          console.log('[Home View] Updated connections count:', connectionsData.length)
+          setConnections(connectionsData)
+        })
+        .catch(error => {
+          console.error('[Home View] Error loading connections:', error)
+        })
+    }
+  }, [view, privyUser?.id])
+
   const checkAuth = async () => {
     if (!privyUser) {
       setIsLoading(false)
@@ -388,6 +404,8 @@ export default function LetsConnect() {
         return
       }
 
+      // Show loading state
+      setIsScanningQR(true)
       console.log('[Scan] Adding connection...')
       console.log('[Scan] Current connections count BEFORE:', connections.length)
       
@@ -404,11 +422,13 @@ export default function LetsConnect() {
       // Show success message
       toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
       
-      // Navigate immediately with fresh data already in state
+      // Hide loading and navigate with fresh data
+      setIsScanningQR(false)
       console.log('[Scan] Navigating to connections view with fresh data')
       setView("connections")
       
     } catch (error) {
+      setIsScanningQR(false)
       console.error("[Scan] Error adding connection:", error)
       
       // Safely extract error message
@@ -831,6 +851,20 @@ export default function LetsConnect() {
   }
 
   if (view === "scan") {
+    // Show loading screen during QR scan processing
+    if (isScanningQR) {
+      return (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="relative w-24 h-24 mx-auto mb-4">
+              <img src="/icon-512.jpg" alt="Loading" className="w-full h-full rounded-full animate-spin" style={{ animationDuration: '2s' }} />
+            </div>
+            <p className="text-white font-bold text-lg">Adding connection...</p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen bg-black flex flex-col">
         <div className="p-6 flex items-center justify-between">
