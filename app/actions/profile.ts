@@ -39,16 +39,23 @@ export async function getProfile(userId: string) {
 export async function upsertProfile(profile: Profile) {
   const supabase = await getSupabaseServerClient()
 
-  console.log('[Upsert Profile] Attempting to save:', JSON.stringify(profile, null, 2))
-  console.log('[Upsert Profile] Interests type:', typeof profile.interests, 'Value:', profile.interests)
+  // Consolidate twitter and x fields (they're the same thing)
+  const twitterHandle = profile.x || profile.twitter || ''
+  const consolidatedProfile = {
+    ...profile,
+    x: twitterHandle,
+    twitter: twitterHandle,  // Keep both synced for backwards compatibility
+    updated_at: new Date().toISOString(),
+  }
+
+  console.log('[Upsert Profile] Attempting to save:', JSON.stringify(consolidatedProfile, null, 2))
+  console.log('[Upsert Profile] Interests type:', typeof consolidatedProfile.interests, 'Value:', consolidatedProfile.interests)
+  console.log('[Upsert Profile] Twitter/X consolidated to:', twitterHandle)
 
   const { data, error } = await supabase
     .from("profiles")
     .upsert(
-      {
-        ...profile,
-        updated_at: new Date().toISOString(),
-      },
+      consolidatedProfile,
       {
         onConflict: "user_id",
       },

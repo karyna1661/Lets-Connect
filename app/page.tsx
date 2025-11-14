@@ -171,6 +171,10 @@ export default function LetsConnect() {
           if (result.success && result.data) {
             // MERGE: Only fill in fields that are currently empty
             // Keep user's manually entered data (email, city, interests, etc.)
+            
+            // Consolidate twitter and x fields (they're the same thing)
+            const twitterHandle = result.data.x || result.data.twitter || existingProfile?.x || existingProfile?.twitter || ''
+            
             const mergedProfile = {
               ...existingProfile,  // Start with existing data
               ...result.data,      // Add Farcaster data
@@ -182,9 +186,13 @@ export default function LetsConnect() {
               linkedin: existingProfile?.linkedin || result.data.linkedin || '',
               instagram: existingProfile?.instagram || result.data.instagram || '',
               youtube: existingProfile?.youtube || result.data.youtube || '',
+              // Consolidate twitter and x to prevent duplicates
+              x: twitterHandle,
+              twitter: twitterHandle,  // Keep both synced for backwards compatibility
               user_id: privyUser.id
             }
             console.log('[Auto Sync] Merged profile (preserving manual data):', mergedProfile)
+            console.log('[Auto Sync] Twitter/X consolidated to:', twitterHandle)
             
             // Auto-save the merged profile to database
             try {
