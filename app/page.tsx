@@ -381,19 +381,51 @@ export default function LetsConnect() {
       
       // Reload data immediately - this will refresh connections list
       console.log('[Scan] Reloading connections from database...')
-      const [updatedProfile, updatedConnections] = await Promise.all([
-        getProfile(privyUser.id),
-        getConnections(privyUser.id)
-      ])
       
-      console.log('[Scan] Connections reloaded from DB, count:', updatedConnections.length)
-      console.log('[Scan] Updated connections:', updatedConnections.map(c => ({ id: c.id, name: c.connection_data.name })))
+      let updatedProfile = null
+      let updatedConnections = []
+      
+      try {
+        const results = await Promise.all([
+          getProfile(privyUser.id),
+          getConnections(privyUser.id)
+        ])
+        updatedProfile = results[0]
+        updatedConnections = results[1]
+        
+        console.log('[Scan] Profile fetched:', updatedProfile ? 'success' : 'null')
+        console.log('[Scan] Connections fetched, count:', updatedConnections?.length || 0)
+        console.log('[Scan] Connections data type:', typeof updatedConnections, Array.isArray(updatedConnections))
+        
+        // Safely log connections
+        if (Array.isArray(updatedConnections) && updatedConnections.length > 0) {
+          try {
+            const connectionNames = updatedConnections.map(c => ({
+              id: c?.id || 'no-id',
+              name: c?.connection_data?.name || 'no-name',
+              hasData: !!c?.connection_data
+            }))
+            console.log('[Scan] Updated connections:', connectionNames)
+          } catch (mapError) {
+            console.error('[Scan] Error mapping connections:', mapError)
+            console.log('[Scan] Raw connections:', JSON.stringify(updatedConnections).substring(0, 200))
+          }
+        }
+      } catch (fetchError) {
+        console.error('[Scan] Error fetching updated data:', fetchError)
+        throw fetchError
+      }
       
       // Update state with fresh data
       if (updatedProfile) {
         setProfile(updatedProfile)
       }
-      setConnections(updatedConnections)
+      
+      if (Array.isArray(updatedConnections)) {
+        setConnections(updatedConnections)
+      } else {
+        console.error('[Scan] Invalid connections data, keeping old state')
+      }
       
       // Show success feedback AFTER state is updated
       toast.success(`✓ Connected with ${scannedProfile.name}!`, { duration: 3000 })
@@ -401,11 +433,26 @@ export default function LetsConnect() {
       // Wait a bit for React to re-render with new state
       await new Promise(resolve => setTimeout(resolve, 100))
       
-      console.log('[Scan] Navigating to connections view with', updatedConnections.length, 'connections')
+      console.log('[Scan] Navigating to connections view')
       setView("connections")
     } catch (error) {
       console.error("[Scan] Error adding connection:", error)
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+      
+      // Safely extract error message
+      let errorMessage = "Unknown error occurred"
+      try {
+        if (error instanceof Error) {
+          errorMessage = error.message
+        } else if (typeof error === 'string') {
+          errorMessage = error
+        } else if (error && typeof error === 'object') {
+          errorMessage = JSON.stringify(error)
+        }
+      } catch (stringifyError) {
+        console.error('[Scan] Error stringifying error:', stringifyError)
+        errorMessage = 'Failed to parse error message'
+      }
+      
       console.error("[Scan] Error details:", errorMessage)
       toast.error(`Failed to add connection: ${errorMessage}`)
       setView("home")
