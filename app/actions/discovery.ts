@@ -159,15 +159,33 @@ export async function getDiscoveryProfiles(userId: string, city?: string, useMoc
 
     const supabase = await getSupabaseServer()
 
-    let query = supabase.from("profiles").select("*").eq("is_discoverable", true).neq("user_id", userId)
+    // Get user's wallet address for POAP matching
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('wallet_address')
+      .eq('user_id', userId)
+      .single()
 
-    if (city) {
-      query = query.eq("city", city)
+    const userWallet = userProfile?.wallet_address || null
+
+    // Use optimized batch query function - ONE QUERY, NO N+1 PROBLEM!
+    const { data, error } = await supabase.rpc('get_discovery_profiles_optimized', {
+      p_user_id: userId,
+      p_user_wallet: userWallet,
+      p_limit: 50,
+      p_city: city || null
+    })
+
+    if (error) {
+      console.error('[Discovery] Error from optimized query:', error)
+      // Fallback to mock data on error
+      console.log('[Discovery] Falling back to mock profiles')
+      let mockData = [...MOCK_PROFILES]
+      if (city) {
+        mockData = mockData.filter(p => p.city === city)
+      }
+      return mockData.sort((a, b) => b.compatibility_score - a.compatibility_score)
     }
-
-    const { data, error } = await query.order("updated_at", { ascending: false }).limit(50)
-
-    if (error) throw error
 
     // If no real profiles found, return mock data
     if (!data || data.length === 0) {
@@ -179,17 +197,13 @@ export async function getDiscoveryProfiles(userId: string, city?: string, useMoc
       return mockData.sort((a, b) => b.compatibility_score - a.compatibility_score)
     }
 
-    // PERFORMANCE FIX: Instead of calculating compatibility for each profile,
-    // assign random scores for now to avoid N database calls
-    // TODO: Implement a batch compatibility calculation RPC function
-    const profilesWithScores = data.map((profile) => ({
-      ...profile,
-      compatibility_score: Math.floor(Math.random() * 30) + 70 // Random score 70-100
-    }))
+    console.log(`[Discovery] Loaded ${data.length} profiles with POAP matching in ONE query ⚡`)
+    console.log(`[Discovery] Performance: ${data.filter((p: any) => p.shared_poap_count > 0).length} profiles with shared POAPs`)
 
-    return profilesWithScores.sort((a, b) => b.compatibility_score - a.compatibility_score)
+    // Data already has compatibility_score and shared_poap_count from the function
+    return data.sort((a: any, b: any) => b.compatibility_score - a.compatibility_score)
   } catch (error) {
-    console.error("[v0] Error fetching discovery profiles:", error)
+    console.error("[Discovery] Error fetching discovery profiles:", error)
     // On error, return mock data as fallback
     console.log("[Discovery] Error occurred, falling back to mock profiles")
     let mockData = [...MOCK_PROFILES]
